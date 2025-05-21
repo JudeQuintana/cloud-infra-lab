@@ -90,7 +90,7 @@ Tear Down:
 - `terraform destroy`
   - note: vpcs will take 10-15min to destroy due to IPAM taking a long
     time to release the IP.
-- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/mysql/app  --force-delete-without-recovery --region us-west-2`
+- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app  --force-delete-without-recovery --region us-west-2`
 - `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
 
 
