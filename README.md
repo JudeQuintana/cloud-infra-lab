@@ -27,10 +27,9 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 Tear Down:
 - `terraform destroy`
-- `aws secretsmanager delete-secret --region us-west-2 --secret-id
-  rds/mysql/app  --force-delete-without-recovery`
-- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot`
-
+- `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
+- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/mysql/app  --force-delete-without-recovery --region us-west-2`
+- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
 
 ### Endpoints
 - Health Check:
@@ -81,7 +80,7 @@ Tear Down:
     IGW or NATGW.
 
 ### TODO
-- add IPAM and VPC configuration
+- add IPAM to VPC configuration
 - modularize:
   - `alb.tf`
   - `asg.tf`
