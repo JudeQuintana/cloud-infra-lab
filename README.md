@@ -27,6 +27,10 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 Tear Down:
 - `terraform destroy`
+- `aws secretsmanager delete-secret --region us-west-2 --secret-id
+  rds/mysql/app  --force-delete-without-recovery`
+- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot`
+
 
 ### Endpoints
 - Health Check:
