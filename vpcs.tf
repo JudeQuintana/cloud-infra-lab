@@ -15,6 +15,10 @@ locals {
   ipv4_ipam_pool_usw2 = data.aws_vpc_ipam_pool.ipv4_usw2
 
   # INFO: ASG can spin up without a NATWGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
+  #
+  # NOTE: Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
+  # It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
+  # example: https://github.com/JudeQuintana/terraform-main/tree/main/dual_stack_full_mesh_trio_demo
   vpcs = [
     {
       name = "app"
