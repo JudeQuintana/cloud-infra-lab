@@ -8,7 +8,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 locals {
-  # change from allow from any to only allow specific IPs
+  # change from allow from any to only allow specific IPs for 80 and 443
   alb_ingress_cidrs = ["0.0.0.0/0"]
 }
 

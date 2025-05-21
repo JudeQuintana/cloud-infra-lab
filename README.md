@@ -20,6 +20,18 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
+### IPAM Configuration Prereq
+- There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
+- You'll need to configure your own IPv4 pools/subpools in ipam.
+- Advanced Tier IPAM in `us-east-2`, `us-west-2`, `us-east-1` and operating reigons.
+  - In this demo, ipam pools for all locales are managed in the `us-west-2` region via AWS Console UI.
+  - No IPv4 regional pools at the moment.
+  - `us-west-2` (ipam locale)
+    - IPv4 Pool (private scope)
+      - Description: `ipv4-test-usw2`
+      - Provisioned CIDRs:
+        - `10.0.0.0/18`
+
 ### Build
 - `terraform init`
 - `terraform apply`
@@ -28,8 +40,11 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 Tear Down:
 - `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
 - `terraform destroy`
+  - note: vpcs will take 10-15min to destroy due to IPAM taking a long
+    time to release the IP.
 - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/mysql/app  --force-delete-without-recovery --region us-west-2`
 - `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
+
 
 ### Endpoints
 - Health Check:
@@ -80,7 +95,6 @@ Tear Down:
     IGW or NATGW.
 
 ### TODO
-- add IPAM to VPC configuration
 - modularize:
   - `alb.tf`
   - `asg.tf`
