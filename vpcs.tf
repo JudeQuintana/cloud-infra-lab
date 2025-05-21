@@ -66,3 +66,7 @@ locals {
   vpc_names = { for v in module.vpcs : v.name => v.name }
 }
 
+output "vpcs_natgw_eips_per_az" {
+  value = { for v in module.vpcs : v.name => v.public_natgw_az_to_eip }
+}
+
