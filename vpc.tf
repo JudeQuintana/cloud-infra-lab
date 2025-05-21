@@ -1,5 +1,6 @@
 locals {
   # TODO: add IPAM to VPC and ALB
+  # INFO: ASG can spin up without a NATWGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
   tiered_vpcs = [
     {
       name         = "app"
@@ -12,8 +13,7 @@ locals {
 
           ]
           public_subnets = [
-            { name = "lb1", cidr = "10.0.3.0/28", }
-            #{ name = "lb1", cidr = "10.0.3.0/28", natgw = true }
+            { name = "lb1", cidr = "10.0.3.0/28", natgw = true }
           ]
         }
         b = {
@@ -23,8 +23,7 @@ locals {
 
           ]
           public_subnets = [
-            #{ name = "lb2", cidr = "10.0.9.0/28", natgw = true }
-            { name = "lb2", cidr = "10.0.9.0/28", }
+            { name = "lb2", cidr = "10.0.9.0/28", natgw = true }
           ]
         }
       }
