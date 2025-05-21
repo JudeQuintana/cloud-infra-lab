@@ -61,6 +61,9 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 
 ### Pre-reqs
+AWS:
+- aws cli installed and configured.
+
 Zone and Domain:
 - Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
