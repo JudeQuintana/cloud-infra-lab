@@ -26,10 +26,10 @@ locals {
       azs = {
         a = {
           isolated_subnets = [
-            { name = "db1", cidr = "10.0.2.0/24" }
+            { name = "db1", cidr = "10.0.1.0/24" }
           ]
           private_subnets = [
-            { name = "proxy1", cidr = "10.0.1.0/24", }
+            { name = "proxy1", cidr = "10.0.2.0/24" }
           ]
           public_subnets = [
             { name = "lb1", cidr = "10.0.3.0/28", natgw = true }
@@ -37,10 +37,10 @@ locals {
         }
         b = {
           isolated_subnets = [
-            { name = "db2", cidr = "10.0.8.0/24" }
+            { name = "db2", cidr = "10.0.7.0/24" }
           ]
           private_subnets = [
-            { name = "proxy2", cidr = "10.0.7.0/24", }
+            { name = "proxy2", cidr = "10.0.8.0/24" }
           ]
           public_subnets = [
             { name = "lb2", cidr = "10.0.9.0/28", natgw = true }
