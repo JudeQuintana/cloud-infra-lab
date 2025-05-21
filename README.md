@@ -25,6 +25,9 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 - `terraform apply`
 - profit!
 
+Tear Down:
+- `terraform destroy`
+
 ### Endpoints
 - Health Check:
   - `https://cloud.jq1.io/` -> `Health: OK: MaD GrEEtz!`
