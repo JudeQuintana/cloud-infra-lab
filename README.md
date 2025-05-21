@@ -9,7 +9,7 @@
 
 --=[ PrEsENtZ ]=--
 
---=[ 🚀 Cloud Infra Lab: Provision a Scalable ALB + ASG + NGINX + RDS Setup ]=--
+--=[ 🚀 Cloud Infra Lab: Scalable ALB + ASG + NGINX + RDS Setup ]=--
 
 -=[ Provision a complete AWS stack using Terraform ]=-
 
