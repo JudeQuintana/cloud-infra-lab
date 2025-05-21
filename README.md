@@ -59,7 +59,11 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
   - VPC Endpoint
     - S3 Gateway for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 
-### IPAM Configuration Pre-req
+
+### Pre-reqs
+- Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
+
+IPAM Configuration
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
 - You'll need to configure your own IPv4 pools/subpools in IPAM.
 - Advanced Tier IPAM in `us-west-2` operating reigons.
@@ -92,8 +96,6 @@ Tear Down:
 - RDS Connectivity Checks:
   - `https://cloud.jq1.io/app1` -> `App1: MySQL OK (or MySQL Error)`
   - `https://cloud.jq1.io/app2` -> `App2: MySQL OK (or MySQL Error)`
-
-- Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
 ### TODO
 - modularize:
