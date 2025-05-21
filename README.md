@@ -61,9 +61,10 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 
 ### Pre-reqs
+Zone and Domain:
 - Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
-IPAM Configuration
+IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
 - You'll need to configure your own IPv4 pools/subpools in IPAM.
 - Advanced Tier IPAM in `us-west-2` operating reigons.
@@ -75,7 +76,8 @@ IPAM Configuration
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
-### Build
+### Begin Demo
+Build:
 - `terraform init`
 - `terraform apply`
 - profit!
