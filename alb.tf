@@ -1,11 +1,11 @@
 locals {
-  dns_zone    = "jq1.io"
-  domain_name = format("%s.%s", "cloud", local.dns_zone) # cloud.jq1.io
+  zone_name   = "jq1.io"
+  domain_name = format("%s.%s", "cloud", local.zone_name) # cloud.jq1.io
 }
 
 ### Existing DNS zone
 data "aws_route53_zone" "zone" {
-  name = local.dns_zone
+  name = local.zone_name
 }
 
 ### ACM Certificate (DNS Validated)
