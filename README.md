@@ -20,6 +20,45 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
+### Components
+- Application Load Balancer (ALB)
+  - HTTPS (TLS 1.2 & 1.3) with ACM
+  - Path-based routing: /app1, /app2
+
+- Auto Scaling Group (ASG)
+  - EC2 instances with cloud-init & socat health endpoints
+  - Scales based on CPU utilization
+  - Deployed across multiple AZs
+
+- NGINX reverse proxy + Socat Health Checks
+  - /app1 and /app2 return MySQL health
+  - Uses socat for reliable TCP responses
+  - Lightweight bash scripts to simulate apps
+  - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager
+
+- Amazon RDS (MySQL)
+  - Multi-AZ with encryption via custom KMS key
+  - Access controlled by SGs (only from ASG instances)
+
+- Security Groups
+  - Fine-grained rules for ALB ↔ EC2 ↔ RDS
+  - Outbound rules configured for necessary security groups
+
+- Scaling Behavior
+  - Scale Out: if average CPU > 70% for 2 minutes
+  - Scale In: if average CPU < 30% for 2 minutes
+  - Policies managed via CloudWatch alarms + ASG
+
+- Secure Practices
+  - Secrets (MySQL creds) stored in AWS Secrets Manager
+  - TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06
+  - RDS encrypted with custom KMS CMK
+
+- VPC
+  - uses IPAM
+  - VPC Endpoint
+    - S3 Gateway for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+
 ### IPAM Configuration Pre-req
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
 - You'll need to configure your own IPv4 pools/subpools in IPAM.
@@ -56,46 +95,9 @@ Tear Down:
 
 - Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
-### Components
-- Application Load Balancer (ALB)
-  - HTTPS (TLS 1.2 & 1.3) with ACM
-  - Path-based routing: /app1, /app2
-
-- Auto Scaling Group (ASG)
-  - EC2 instances with cloud-init & socat health endpoints
-  - Scales based on CPU utilization
-  - Deployed across multiple AZs
-
-- NGINX reverse proxy + Socat Health Checks
-  - /app1 and /app2 return MySQL health
-  - Uses socat for reliable TCP responses
-  - Lightweight bash scripts to simulate apps
-  - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager
-
-- Amazon RDS (MySQL)
-  - Multi-AZ with encryption via custom KMS key
-  - Access controlled by SGs (only from ASG instances)
-
-- Security Groups
-  - Fine-grained rules for ALB ↔ EC2 ↔ RDS
-  - Outbound rules configured for necessary security groups
-
-- Scaling Behavior
-  - Scale Out: if average CPU > 70% for 2 minutes
-  - Scale In: if average CPU < 30% for 2 minutes
-  - Policies managed via CloudWatch alarms + ASG
-
-- Secure Practices
-  - Secrets (MySQL creds) stored in AWS Secrets Manager
-  - TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06
-  - RDS encrypted with custom KMS CMK
-
-- VPC S3 Endpoint
-  - S3 Gateway for sending s3 traffic direct to s3 instead of traversing
-    IGW or NATGW.
-
 ### TODO
 - modularize:
   - `alb.tf`
   - `asg.tf`
   - `rds.tf`
+
