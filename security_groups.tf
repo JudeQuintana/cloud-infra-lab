@@ -91,7 +91,7 @@ resource "aws_security_group_rule" "instance_egress_3306_to_vpc_for_asg_instance
 ### MySQL
 resource "aws_security_group" "mysql_sg" {
   name        = "mysql-sg"
-  vpc_id      = lookup(module.vpcs, local.tiered_vpc_names.app).id
+  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
   description = "mysql-sg"
   tags = {
     Name = "mysql-sg"

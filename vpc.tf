@@ -16,7 +16,7 @@ locals {
   ipv4_ipam_pool_usw2 = data.aws_vpc_ipam_pool.ipv4_usw2
 
   # INFO: ASG can spin up without a NATWGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
-  tiered_vpcs = [
+  vpcs = [
     {
       name = "app"
       ipv4 = {
@@ -25,20 +25,22 @@ locals {
       }
       azs = {
         a = {
+          isolated_subnets = [
+            { name = "db1", cidr = "10.0.2.0/24" }
+          ]
           private_subnets = [
-            { name = "proxy1", cidr = "10.0.1.0/24", },
-            { name = "db1", cidr = "10.0.2.0/24" } # should use isolated subnet but using private for now
-
+            { name = "proxy1", cidr = "10.0.1.0/24", }
           ]
           public_subnets = [
             { name = "lb1", cidr = "10.0.3.0/28", natgw = true }
           ]
         }
         b = {
+          isolated_subnets = [
+            { name = "db2", cidr = "10.0.8.0/24" }
+          ]
           private_subnets = [
-            { name = "proxy2", cidr = "10.0.7.0/24", },
-            { name = "db2", cidr = "10.0.8.0/24" } # should use isolated subnet but using private for now
-
+            { name = "proxy2", cidr = "10.0.7.0/24", }
           ]
           public_subnets = [
             { name = "lb2", cidr = "10.0.9.0/28", natgw = true }
@@ -53,7 +55,7 @@ module "vpcs" {
   source  = "JudeQuintana/tiered-vpc-ng/aws"
   version = "1.0.7"
 
-  for_each = { for t in local.tiered_vpcs : t.name => t }
+  for_each = { for t in local.vpcs : t.name => t }
 
   env_prefix       = var.env_prefix
   region_az_labels = var.region_az_labels
@@ -61,6 +63,6 @@ module "vpcs" {
 }
 
 locals {
-  tiered_vpc_names = { for v in module.vpcs : v.name => v.name }
+  vpc_names = { for v in module.vpcs : v.name => v.name }
 }
 

@@ -147,8 +147,8 @@ resource "aws_autoscaling_group" "web_asg" {
   max_size         = 8
   desired_capacity = 2
   vpc_zone_identifier = [
-    lookup(lookup(module.vpcs, local.tiered_vpc_names.app).private_subnet_name_to_subnet_id, "proxy1"),
-    lookup(lookup(module.vpcs, local.tiered_vpc_names.app).private_subnet_name_to_subnet_id, "proxy2")
+    lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy1"),
+    lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy2")
   ]
   target_group_arns         = [aws_lb_target_group.tg.arn]
   health_check_type         = "EC2"

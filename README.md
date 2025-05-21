@@ -20,10 +20,10 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
-### IPAM Configuration Prereq
+### IPAM Configuration Pre-req
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
-- You'll need to configure your own IPv4 pools/subpools in ipam.
-- Advanced Tier IPAM in `us-east-2`, `us-west-2`, `us-east-1` and operating reigons.
+- You'll need to configure your own IPv4 pools/subpools in IPAM.
+- Advanced Tier IPAM in `us-west-2` operating reigons.
   - In this demo, ipam pools for all locales are managed in the `us-west-2` region via AWS Console UI.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (ipam locale)
