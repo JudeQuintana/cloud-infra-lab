@@ -15,7 +15,7 @@ data "aws_ami" "al2023" {
 
 locals {
   # demonstrating pulling from secretsmanager
-  # should use readonly creds instead of using admin creds to access the db but used here for demo puroposes
+  # should use readonly creds instead of using admin creds to access the db but used here for demo purposes
   secretsmanager_mysql_creds = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
   mysql = {
     host    = lookup(local.secretsmanager_mysql_creds, "host")

@@ -1,4 +1,4 @@
-# db admin pass
+# valid db admin pass
 resource "random_password" "rds_password" {
   length           = 32
   override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%^&*()-_=+[]{}:;,.?"
