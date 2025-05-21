@@ -103,3 +103,6 @@ resource "aws_route53_record" "alb_cname" {
   records = [aws_lb.alb.dns_name]
 }
 
+output "domain_name" {
+  value = format("%s%s", "https://", local.domain_name)
+}
