@@ -3,7 +3,7 @@ resource "aws_security_group" "alb_sg" {
   vpc_id      = lookup(module.vpcs, "app").id
   description = "alb-sg"
   tags = {
-    Name = "alb-sg"
+    Name = format("%s-%s", var.env_prefix, "alb-sg")
   }
 }
 
@@ -45,7 +45,7 @@ resource "aws_security_group" "instance_sg" {
   vpc_id      = lookup(module.vpcs, "app").id
   description = "instance-sg"
   tags = {
-    Name = "instance-sg"
+    Name = format("%s-%s", var.env_prefix, "instance-sg")
   }
 }
 
@@ -94,7 +94,7 @@ resource "aws_security_group" "mysql_sg" {
   vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
   description = "mysql-sg"
   tags = {
-    Name = "mysql-sg"
+    Name = format("%s-%s", var.env_prefix, "mysql-sg")
   }
 }
 

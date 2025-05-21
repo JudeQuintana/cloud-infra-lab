@@ -136,7 +136,7 @@ resource "aws_launch_template" "web_lt" {
     resource_type = "instance"
 
     tags = {
-      Name = "test-web-instance"
+      Name = format("%s-%s", var.env_prefix, "web-instance")
     }
   }
 }
@@ -161,7 +161,7 @@ resource "aws_autoscaling_group" "web_asg" {
 
   tag {
     key                 = "Name"
-    value               = "web-instance"
+    value               = format("%s-%s", var.env_prefix, "web-instance")
     propagate_at_launch = true
   }
 }

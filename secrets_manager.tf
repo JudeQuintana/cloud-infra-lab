@@ -1,6 +1,7 @@
 # use secrets manager to access admin creds elsewhere
+# ie rds/env/mysql/app
 resource "aws_secretsmanager_secret" "rds" {
-  name = "rds/mysql/app"
+  name = format("rds/%s/%s", var.env_prefix, "mysql/app")
 }
 
 resource "aws_secretsmanager_secret_version" "rds" {

@@ -11,7 +11,7 @@ resource "aws_kms_key" "rds" {
 }
 
 resource "aws_kms_alias" "rds" {
-  name          = "alias/rds-mysql"
+  name          = format("alias/%s-%s", var.env_prefix, "rds-mysql")
   target_key_id = aws_kms_key.rds.key_id
 }
 
@@ -23,7 +23,7 @@ resource "aws_db_subnet_group" "mysql" {
   ]
 
   tags = {
-    Name = "mysql-subnet-group"
+    Name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
   }
 }
 
@@ -57,7 +57,7 @@ resource "aws_db_instance" "mysql" {
   port                      = local.rds_connection.port
 
   tags = {
-    Name = "app-mysql"
+    Name = format("%s-%s", var.env_prefix, "app-mysql")
   }
 }
 
