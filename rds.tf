@@ -18,8 +18,8 @@ resource "aws_kms_alias" "rds" {
 resource "aws_db_subnet_group" "mysql" {
   name = "mysql-subnet-group"
   subnet_ids = [
-    lookup(module.vpcs, local.tiered_vpc_names.app).private_subnet_name_to_subnet_id["db1"],
-    lookup(module.vpcs, local.tiered_vpc_names.app).private_subnet_name_to_subnet_id["db2"]
+    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
+    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
   ]
 
   tags = {

@@ -20,27 +20,6 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
-### Build
-- `terraform init`
-- `terraform apply`
-- profit!
-
-Tear Down:
-- `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
-- `terraform destroy`
-- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/mysql/app  --force-delete-without-recovery --region us-west-2`
-- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
-
-### Endpoints
-- Health Check:
-  - `https://cloud.jq1.io/` -> `Health: OK: MaD GrEEtz!`
-
-- RDS Connectivity Checks:
-  - `https://cloud.jq1.io/app1` -> `App1: MySQL OK (or MySQL Error)`
-  - `https://cloud.jq1.io/app2` -> `App2: MySQL OK (or MySQL Error)`
-
-- Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
-
 ### Components
 - Application Load Balancer (ALB)
   - HTTPS (TLS 1.2 & 1.3) with ACM
@@ -75,13 +54,50 @@ Tear Down:
   - TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06
   - RDS encrypted with custom KMS CMK
 
-- VPC S3 Endpoint
-  - S3 Gateway for sending s3 traffic direct to s3 instead of traversing
-    IGW or NATGW.
+- VPC
+  - uses IPAM
+  - VPC Endpoint
+    - S3 Gateway for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+
+### IPAM Configuration Pre-req
+- There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
+- You'll need to configure your own IPv4 pools/subpools in IPAM.
+- Advanced Tier IPAM in `us-west-2` operating reigons.
+  - In this demo, ipam pools for all locales are managed in the `us-west-2` region via AWS Console UI.
+  - No IPv4 regional pools at the moment.
+  - `us-west-2` (ipam locale)
+    - IPv4 Pool (private scope)
+      - Description: `ipv4-test-usw2`
+      - Provisioned CIDRs:
+        - `10.0.0.0/18`
+
+### Build
+- `terraform init`
+- `terraform apply`
+- profit!
+
+Tear Down:
+- `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
+- `terraform destroy`
+  - note: vpcs will take 10-15min to destroy due to IPAM taking a long
+    time to release the IP.
+- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/mysql/app  --force-delete-without-recovery --region us-west-2`
+- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
+
+
+### Endpoints
+- Health Check:
+  - `https://cloud.jq1.io/` -> `Health: OK: MaD GrEEtz!`
+
+- RDS Connectivity Checks:
+  - `https://cloud.jq1.io/app1` -> `App1: MySQL OK (or MySQL Error)`
+  - `https://cloud.jq1.io/app2` -> `App2: MySQL OK (or MySQL Error)`
+
+- Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
 ### TODO
-- add IPAM to VPC configuration
 - modularize:
   - `alb.tf`
   - `asg.tf`
   - `rds.tf`
+
