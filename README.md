@@ -11,7 +11,7 @@
 
 --=[ 🚀 Cloud Infra Lab: Scalable ALB + ASG + NGINX + RDS Setup ]=--
 
--=[ Provision a complete AWS stack using Terraform ]=-
+--=[ Provision a complete AWS stack using Terraform ]=--
 
 --=[ #StayUp ]=--
 ```
