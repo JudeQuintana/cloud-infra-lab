@@ -9,14 +9,12 @@
 
 --=[ PrEsENtZ ]=--
 
---=[ 🚀 Cloud Infra Lab: Scalable ALB + ASG + NGINX + RDS Setup ]=--
+--=[ 🚀 Cloud Infra Lab: Provision a Scalable ALB + ASG + NGINX + RDS Setup ]=--
 
---=[ Provision a complete AWS stack using Terraform ]=--
+--=[ First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes ]=--
 
 --=[ #StayUp ]=--
 ```
-
-First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project for learning purposes.
 
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
