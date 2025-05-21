@@ -103,7 +103,7 @@ Tear Down:
   - `https://cloud.jq1.io/app2` -> `App2: MySQL OK (or MySQL Error)`
 
 ### TODO
-- modularize:
+- modularize (object oriented style):
   - `alb.tf`
   - `asg.tf`
   - `rds.tf`
