@@ -94,7 +94,7 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-### DNS for cloud.jq1.io
+### DNS Record
 resource "aws_route53_record" "alb_cname" {
   zone_id = data.aws_route53_zone.zone.zone_id
   name    = local.domain_name
