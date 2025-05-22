@@ -65,6 +65,8 @@ AWS:
 - aws cli installed and configured.
 
 Zone and Domain:
+- Must own the zone and the aws zone resource should already exist.
+  - Demo looks up the zone resource.
 - Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
 
 IPAM Configuration:
