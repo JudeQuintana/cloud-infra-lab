@@ -51,12 +51,16 @@ Build:
 - profit!
 
 Tear Down:
-- `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
-- `terraform destroy`
+- Remove RDS deletion protection:
+  - `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
+- Destroy resources:
+  - `terraform destroy`
   - note: vpcs will take 10-15min to destroy due to IPAM taking a long
     time to release the IP.
-- `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app  --force-delete-without-recovery --region us-west-2`
-- `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
+- Force delete the secrets manager path instead of waiting for scheduled deletion:
+  - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
+- Delete snapshot that was created when destroying the DB.
+  - `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
 
 ### Endpoints
 Health Check:
@@ -74,41 +78,40 @@ Modularize (OO style):
 
 ### Components
 Application Load Balancer (ALB):
-- HTTPS (TLS 1.2 & 1.3) with ACM
-- Path-based routing: /app1, /app2
+- HTTPS (TLS 1.2 & 1.3) with ACM.
+- Path-based routing: /app1, /app2.
 
 Auto Scaling Group (ASG):
-- EC2 instances with cloud-init & socat health endpoints
-- Scales based on CPU utilization
-- Deployed across multiple AZs
+- EC2 instances with cloud-init & socat health endpoints.
+- Scales based on CPU utilization.
+- Deployed across multiple AZs.
 
 NGINX reverse proxy + Socat Health Checks:
-- /app1 and /app2 return MySQL health
-- Uses socat for reliable TCP responses
-- Lightweight bash scripts to simulate apps
-- mysql -e "SELECT 1" run with credentials pulled from Secrets Manager
+- /app1 and /app2 return MySQL health.
+- Uses socat for reliable TCP responses.
+- Lightweight bash scripts to simulate apps.
+- mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
 
 Amazon RDS (MySQL):
-- Multi-AZ with encryption via custom KMS key
-- Access controlled by SGs (only from ASG instances)
+- Multi-AZ with encryption via custom KMS key.
+- Access controlled by SGs (only from ASG instances).
 
 Security Groups:
-- Fine-grained rules for ALB ↔ EC2 ↔ RDS
-- Outbound rules configured for necessary security groups
+- Fine-grained rules for ALB ↔ EC2 ↔ RDS.
+- Outbound rules configured for necessary security groups.
 
 Scaling Behavior:
-- Scale Out: if average CPU > 70% for 2 minutes
-- Scale In: if average CPU < 30% for 2 minutes
-- Policies managed via CloudWatch alarms + ASG
+- Scale Out: if average CPU > 70% for 2 minutes.
+- Scale In: if average CPU < 30% for 2 minutes.
+- Policies managed via CloudWatch alarms + ASG.
 
 Secure Practices:
-- Secrets (MySQL creds) stored in AWS Secrets Manager
-- TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06
-- RDS encrypted with custom KMS CMK
+- Secrets (MySQL creds) stored in AWS Secrets Manager.
+- TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
+- RDS encrypted with custom KMS CMK.
 
 VPC:
-- Uses Tiered VPC-NG module
-- Requires IPAM
-- VPC Endpoint
-  - S3 Gateway for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+- Uses Tiered VPC-NG module.
+- Requires IPAM.
+- VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 
