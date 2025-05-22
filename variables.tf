@@ -15,3 +15,8 @@ variable "region_az_labels" {
   }
 }
 
+variable "zone_name" {
+  description = "Name of Route53 DNS zone"
+  type        = string
+  default     = "jq1.io"
+}
