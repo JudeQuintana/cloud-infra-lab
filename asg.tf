@@ -164,6 +164,12 @@ resource "aws_autoscaling_group" "web_asg" {
     value               = format("%s-%s", var.env_prefix, "web-instance")
     propagate_at_launch = true
   }
+
+  # will launch with inital desired_capacity value
+  # but need to ignore future values of desired_capacity to let cloudwatch control scaling out and in
+  lifecycle {
+    ignore_changes = [desired_capacity]
+  }
 }
 
 # scale out based on cpu
