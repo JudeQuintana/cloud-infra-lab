@@ -13,7 +13,7 @@
 
 --=[ Provision a complete AWS stack using Terraform ]=--
 
---=[ #StayUp ]=--
+--=[ #StayUp | #End2EndBurner ]=--
 ```
 
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes. ENJOY!
