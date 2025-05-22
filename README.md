@@ -30,7 +30,7 @@ Zone and Domain:
 - Must own the zone via domain registrar.
   - AWS zone resource should already exist (either manually or in Terraform).
   - Demo looks up the zone resource.
-- Change the `zone_name` variable in `variables.tf` to your own zone.
+- Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/9f4aece88c584679e38c7974beb5c22e6bde100f/variables.tf#L21) to your own zone.
 
 IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
