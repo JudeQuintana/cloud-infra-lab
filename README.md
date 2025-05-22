@@ -62,12 +62,12 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ### Pre-reqs
 AWS:
-- aws cli installed and configured.
+- `aws` cli installed and configured.
 
 Zone and Domain:
 - Must own the zone and the aws zone resource should already exist.
   - Demo looks up the zone resource.
-- Change `dns_zone` and `domain_name` local variables in `alb.tf` accordingly.
+- Change `dns_zone` local variables in [alb.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/daca206af682d7cd9216eefbf9281c1c4cacec5e/alb.tf#L2) accordingly.
 
 IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
@@ -98,11 +98,11 @@ Tear Down:
 
 ### Endpoints
 - Health Check:
-  - `https://cloud.jq1.io/` -> `Health: OK: MaD GrEEtz!`
+  - `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
 
 - RDS Connectivity Checks:
-  - `https://cloud.jq1.io/app1` -> `App1: MySQL OK (or MySQL Error)`
-  - `https://cloud.jq1.io/app2` -> `App2: MySQL OK (or MySQL Error)`
+  - `https://cloud.some.domain/app1` -> `App1: MySQL OK (or MySQL Error)`
+  - `https://cloud.some.domain/app2` -> `App2: MySQL OK (or MySQL Error)`
 
 ### TODO
 - modularize (object oriented style):
