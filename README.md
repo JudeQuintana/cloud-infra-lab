@@ -65,9 +65,9 @@ AWS:
 - `aws` cli installed and configured.
 
 Zone and Domain:
-- Must own the zone and the aws zone resource should already exist.
+- Must own the zone and the aws zone resource should already exist (either manually or in Terraform).
   - Demo looks up the zone resource.
-- Change `dns_zone` local variables in [alb.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/daca206af682d7cd9216eefbf9281c1c4cacec5e/alb.tf#L2) accordingly.
+- Change the `dns_zone` local variable in [alb.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/daca206af682d7cd9216eefbf9281c1c4cacec5e/alb.tf#L2) accordingly.
 
 IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
