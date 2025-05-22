@@ -61,13 +61,6 @@ resource "aws_db_instance" "mysql" {
   }
 }
 
-locals {
-  rds_connection_with_host = merge(
-    local.rds_connection,
-    { host = aws_db_instance.mysql.address }
-  )
-}
-
 # rds proxy
 # IAM
 data "aws_iam_policy_document" "assume_role" {
@@ -116,8 +109,16 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 }
 
-resource "aws_db_proxy_target" "rds_instance" {
+resource "aws_db_proxy_target" "rds_proxy_target" {
   db_proxy_name          = aws_db_proxy.rds_proxy.name
   target_group_name      = aws_db_proxy_default_target_group.rds_proxy_tg.name
   db_instance_identifier = aws_db_instance.mysql.identifier
 }
+
+locals {
+  rds_connection_with_host = merge(
+    local.rds_connection,
+    { host = aws_db_proxy.rds_proxy.endpoint }
+  )
+}
+
