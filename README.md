@@ -22,7 +22,7 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 ### Architecture
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
-### Pre-reqs
+### Prerequisites
 AWS:
 - `aws` cli installed and configured.
 
