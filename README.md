@@ -36,7 +36,6 @@ IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
 - You'll need to configure your own IPv4 pools/subpools in IPAM.
 - Advanced Tier IPAM in `us-west-2` operating reigons.
-  - In this demo, ipam pools for all locales are managed in the `us-west-2` region.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (ipam locale)
     - IPv4 Pool (private scope)
