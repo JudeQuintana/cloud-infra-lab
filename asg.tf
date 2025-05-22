@@ -165,8 +165,8 @@ resource "aws_autoscaling_group" "web_asg" {
     propagate_at_launch = true
   }
 
-  # will launch with inital desired_capacity value
-  # but need to ignore future values of desired_capacity to let cloudwatch control scaling out and in
+  # will launch with initial desired_capacity value
+  # but need to ignore future values to let cloudwatch control scaling out and in
   lifecycle {
     ignore_changes = [desired_capacity]
   }
