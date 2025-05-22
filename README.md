@@ -16,8 +16,10 @@
 --=[ #StayUp | #End2EndBurner ]=--
 ```
 
+### Intro
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes. ENJOY!
 
+### Architecture
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
 ### Pre-reqs
