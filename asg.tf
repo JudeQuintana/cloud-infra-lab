@@ -142,7 +142,7 @@ resource "aws_launch_template" "web_lt" {
 }
 
 resource "aws_autoscaling_group" "web_asg" {
-  name             = "web-asg"
+  name             = format("%s-%s", var.env_prefix, "web-asg")
   min_size         = 2
   max_size         = 6
   desired_capacity = 2
@@ -174,7 +174,7 @@ resource "aws_autoscaling_group" "web_asg" {
 
 # scale out based on cpu
 resource "aws_autoscaling_policy" "scale_out" {
-  name                   = "scale-out"
+  name                   = format("%s-%s", var.env_prefix, "scale-out")
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -182,7 +182,7 @@ resource "aws_autoscaling_policy" "scale_out" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "cpu-high"
+  alarm_name          = format("%s-%s", var.env_prefix, "cpu-high")
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -200,7 +200,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 
 # scale in based on cpu
 resource "aws_autoscaling_policy" "scale_in" {
-  name                   = "scale-in"
+  name                   = format("%s-%s", var.env_prefix, "scale-in")
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -208,7 +208,7 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = "cpu-low"
+  alarm_name          = format("%s-%s", var.env_prefix, "cpu-low")
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"

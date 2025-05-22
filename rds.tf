@@ -16,7 +16,7 @@ resource "aws_kms_alias" "rds" {
 }
 
 resource "aws_db_subnet_group" "mysql" {
-  name = "mysql-subnet-group"
+  name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
   subnet_ids = [
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
@@ -38,7 +38,7 @@ locals {
 }
 
 resource "aws_db_instance" "mysql" {
-  identifier                = "app-mysql"
+  identifier                = format("%s-%s", var.env_prefix, "app-mysql")
   engine                    = "mysql"
   engine_version            = "8.0"
   instance_class            = "db.t3.micro"
@@ -50,7 +50,7 @@ resource "aws_db_instance" "mysql" {
   db_subnet_group_name      = aws_db_subnet_group.mysql.name
   storage_encrypted         = true
   kms_key_id                = aws_kms_key.rds.arn
-  final_snapshot_identifier = "app-mysql-final-snapshot"
+  final_snapshot_identifier = format("%s-%s", var.env_prefix, "app-mysql-final-snapshot")
   db_name                   = local.rds_connection.db_name
   username                  = local.rds_connection.username
   password                  = local.rds_connection.password

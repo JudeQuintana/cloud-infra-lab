@@ -51,7 +51,7 @@ Build:
 
 Tear Down:
 - Remove RDS deletion protection:
-  - `aws rds modify-db-instance --db-instance-identifier app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
+  - `aws rds modify-db-instance --db-instance-identifier test-app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
 - Destroy resources:
   - `terraform destroy`
   - note: vpcs will take 10-15min to destroy due to IPAM taking a long
@@ -59,7 +59,7 @@ Tear Down:
 - Force delete the secrets manager path instead of waiting for scheduled deletion:
   - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
 - Delete snapshot that was created when destroying the DB.
-  - `aws rds delete-db-snapshot --db-snapshot-identifier app-mysql-final-snapshot --region us-west-2`
+  - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-mysql-final-snapshot --region us-west-2`
 
 ### Endpoints
 Health Check:
