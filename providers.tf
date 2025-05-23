@@ -3,5 +3,7 @@ provider "aws" {
   region = "us-west-2"
 }
 
-provider "random" {}
+# pull region from aws provider
+data "aws_region" "current" {}
 
+provider "random" {}
