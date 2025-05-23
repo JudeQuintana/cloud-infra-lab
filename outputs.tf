@@ -1,4 +1,4 @@
-output "domain_name" {
+output "url" {
   value = format("%s%s", "https://", local.domain_name)
 }
 
