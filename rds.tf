@@ -83,7 +83,6 @@ resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
 
-
 resource "aws_db_proxy" "rds_proxy" {
   name                   = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
   engine_family          = "MYSQL"
@@ -109,7 +108,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 }
 
-# need this to bypass error on apply:
+# need this wait until rds instance to have available hosts to bypass error on apply:
 # InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
 resource "terraform_data" "wait_for_rds" {
   provisioner "local-exec" {
