@@ -6,4 +6,8 @@ provider "aws" {
 # pull region from aws provider
 data "aws_region" "current" {}
 
+locals {
+  region = data.aws_region.current.name
+}
+
 provider "random" {}

@@ -113,7 +113,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
 # InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
 resource "terraform_data" "wait_for_rds" {
   provisioner "local-exec" {
-    command = format("aws rds wait db-instance-available --db-instance-identifier %s --region %s", aws_db_instance.mysql.identifier, data.aws_region.current.name)
+    command = format("aws rds wait db-instance-available --db-instance-identifier %s --region %s", aws_db_instance.mysql.identifier, local.region)
   }
 
   depends_on = [aws_db_instance.mysql]
