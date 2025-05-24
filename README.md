@@ -29,7 +29,7 @@ AWS:
 Zone and Domain:
 - Must own the DNS zone via domain registrar.
   - AWS Route53 zone resource should already exist (either manually or in Terraform).
-  - Demo looks up the zone resource.
+  - Demo looks up the zone resource by name.
 - Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/9f4aece88c584679e38c7974beb5c22e6bde100f/variables.tf#L21) to your own zone.
 
 IPAM Configuration:
