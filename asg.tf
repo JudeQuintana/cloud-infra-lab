@@ -73,7 +73,7 @@ locals {
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL OK"
         else
           echo "`date` $ERROR_OUTPUT" >> /var/log/app2_mysql_error.log
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL: Version `mysql --version` ERROR\n$ERROR_OUTPUT"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL: Version `mysql --version` ERROR\n$ERROR_OUTPUT"
         fi
         EOF
 
