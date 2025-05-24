@@ -1,6 +1,6 @@
 ### ALB
 resource "aws_security_group" "alb_sg" {
-  vpc_id      = lookup(module.vpcs, "app").id
+  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
   description = "alb-sg"
   tags = {
     Name = format("%s-%s", var.env_prefix, "alb-sg")
@@ -42,7 +42,7 @@ resource "aws_security_group_rule" "alb_egress_80_to_vpc_for_asg_instances" {
 
 ### ASG Instance
 resource "aws_security_group" "instance_sg" {
-  vpc_id      = lookup(module.vpcs, "app").id
+  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
   description = "instance-sg"
   tags = {
     Name = format("%s-%s", var.env_prefix, "instance-sg")
