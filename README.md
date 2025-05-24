@@ -78,7 +78,6 @@ Modularize (OO style):
 ### Components
 Application Load Balancer (ALB):
 - HTTPS (TLS 1.2 & 1.3) with ACM.
-- Path-based routing: /app1, /app2.
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
@@ -86,6 +85,7 @@ Auto Scaling Group (ASG):
 - Deployed across multiple AZs.
 
 NGINX reverse proxy + Socat Health Checks:
+- Path-based routing: /app1, /app2.
 - /app1 and /app2 return MySQL health.
 - Uses socat for reliable TCP responses.
 - Lightweight bash scripts to simulate apps.
