@@ -77,7 +77,7 @@ Modularize (OO style):
 
 ### Components
 Application Load Balancer (ALB):
-- HTTPS (TLS 1.2 & 1.3) with ACM.
+- HTTPS (TLS 1.2 & 1.3) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
