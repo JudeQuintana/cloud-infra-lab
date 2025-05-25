@@ -1,7 +1,8 @@
 ### ALB
 resource "aws_security_group" "alb_sg" {
-  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
-  description = "alb-sg"
+  name   = format("%s-%s", var.env_prefix, "alb-sg")
+  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+
   tags = {
     Name = format("%s-%s", var.env_prefix, "alb-sg")
   }
@@ -42,8 +43,9 @@ resource "aws_security_group_rule" "alb_egress_80_to_vpc_for_asg_instances" {
 
 ### ASG Instance
 resource "aws_security_group" "instance_sg" {
-  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
-  description = "instance-sg"
+  name   = format("%s-%s", var.env_prefix, "instance-sg")
+  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+
   tags = {
     Name = format("%s-%s", var.env_prefix, "instance-sg")
   }
@@ -90,9 +92,9 @@ resource "aws_security_group_rule" "instance_egress_3306_to_vpc_for_asg_instance
 
 ### MySQL
 resource "aws_security_group" "mysql_sg" {
-  name        = "mysql-sg"
-  vpc_id      = lookup(module.vpcs, local.vpc_names.app).id
-  description = "mysql-sg"
+  name   = format("%s-%s", var.env_prefix, "mysql-sg")
+  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+
   tags = {
     Name = format("%s-%s", var.env_prefix, "mysql-sg")
   }
