@@ -44,7 +44,6 @@ locals {
       - echo 'export MYSQL_PASS="${local.mysql.pass}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_DB="${local.mysql.db}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.mysql.timeout}"' >> /etc/profile.d/app_env.sh
-      - chmod +x /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
@@ -68,8 +67,6 @@ locals {
         fi
         EOF
 
-      - chmod +x /usr/local/bin/app1_handler.sh /usr/local/bin/app2_handler.sh
-
       - |
         cat > /usr/local/bin/app1.sh <<'EOF'
         #!/bin/bash
@@ -82,6 +79,7 @@ locals {
         socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
         EOF
 
+      - chmod +x /usr/local/bin/app1_handler.sh /usr/local/bin/app2_handler.sh
       - chmod +x /usr/local/bin/app1.sh /usr/local/bin/app2.sh
       - nohup /usr/local/bin/app1.sh > /var/log/app1.log 2>&1 &
       - nohup /usr/local/bin/app2.sh > /var/log/app2.log 2>&1 &
@@ -114,7 +112,7 @@ locals {
             }
 
             location / {
-              return 200 "Health: OK: MaD GrEEtz!";
+              return 200 "Health: OK: MaD GrEEtz! #End2EndBurner";
             }
           }
         }
@@ -144,7 +142,7 @@ resource "aws_launch_template" "web_lt" {
 resource "aws_autoscaling_group" "web_asg" {
   name             = format("%s-%s", var.env_prefix, "web-asg")
   min_size         = 2
-  max_size         = 6
+  max_size         = 8
   desired_capacity = 2
   vpc_zone_identifier = [
     lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy1"),
@@ -157,6 +155,14 @@ resource "aws_autoscaling_group" "web_asg" {
   launch_template {
     id      = aws_launch_template.web_lt.id
     version = "$Latest"
+  }
+
+  # This tells the asg to keep 100% of your desired capacity healthy before it starts terminating old instances,
+  # and allows it to exceed capacity by up to 50% during replacements.
+  # This coincides with terraform_data.asg_instance_refresher to get 'launch before terminate' behavior.
+  instance_maintenance_policy {
+    min_healthy_percentage = 100
+    max_healthy_percentage = 150
   }
 
   tag {
@@ -172,6 +178,42 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 }
 
+### ASG Instance refresher launch before terminate
+locals {
+  asg_instance_refresher = { for this in [var.asg_instance_refresher] : this => this if var.asg_instance_refresher }
+}
+
+resource "terraform_data" "asg_instance_refresher" {
+  for_each = local.asg_instance_refresher
+
+  triggers_replace = [
+    sha1(aws_launch_template.web_lt.user_data)
+  ]
+
+  # Automatically uses latest launch template version.
+  # Must wait until it finishes before starting a new one (10min+ depending on config) otherwise the command will error.
+  # An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
+  # Dont run instance refresh command on first version of the launch template (unnecessary) but will run on subsequent changes to user_data in the launch template.
+  # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
+  provisioner "local-exec" {
+    command = <<-EOT
+      # fetch the LT’s latest version number
+      VERSION=$(aws ec2 describe-launch-templates \
+        --launch-template-ids ${aws_launch_template.web_lt.id} \
+        --query 'LaunchTemplates[0].LatestVersionNumber' --output text \
+        --region ${local.region})
+
+      if [ "$VERSION" != "1" ]; then
+        aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name ${aws_autoscaling_group.web_asg.name} \
+          --preferences '${jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 })}' \
+          --region ${local.region}
+      fi
+    EOT
+  }
+}
+
+### CoudWatch Alarms for Scaling in and out
 # scale out based on cpu
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = format("%s-%s", var.env_prefix, "scale-out")
