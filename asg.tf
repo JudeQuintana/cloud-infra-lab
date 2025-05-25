@@ -192,7 +192,9 @@ resource "terraform_data" "asg_instance_refresher" {
     sha1(aws_launch_template.web_lt.user_data)
   ]
 
-  # automatically uses latest launch template version
+  # Automatically uses latest launch template version.
+  # Must wait until it finishes before starting a new one otherwise the command will error.
+  # An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
   provisioner "local-exec" {
     command = format(
       "aws autoscaling start-instance-refresh --auto-scaling-group-name %s --preferences %#v --region %s",
