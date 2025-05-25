@@ -3,6 +3,6 @@ output "url" {
 }
 
 output "vpcs_natgw_eips_per_az" {
-  value = { for v in module.vpcs : v.name => v.public_natgw_az_to_eip }
+  value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip }
 }
 

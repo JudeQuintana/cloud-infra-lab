@@ -114,7 +114,7 @@ locals {
             }
 
             location / {
-              return 200 "Health: OK: MaD GrEEtz!";
+              return 200 "Health: OK: MaD GrEEtz! #End2EndBurner";
             }
           }
         }
@@ -159,6 +159,14 @@ resource "aws_autoscaling_group" "web_asg" {
     version = "$Latest"
   }
 
+  # This tells Auto Scaling to keep 100% of your desired capacity healthy before it starts terminating old instances,
+  # and allows it to exceed capacity by up to 50% during replacements.
+  # This coincides with terraform_data.asg_instance_refresher to get launch before terminate behavior.
+  instance_maintenance_policy {
+    min_healthy_percentage = 100
+    max_healthy_percentage = 150
+  }
+
   tag {
     key                 = "Name"
     value               = format("%s-%s", var.env_prefix, "web-instance")
@@ -169,6 +177,29 @@ resource "aws_autoscaling_group" "web_asg" {
   # but need to ignore future values to let cloudwatch control scaling out and in
   lifecycle {
     ignore_changes = [desired_capacity]
+  }
+}
+
+locals {
+  asg_instance_refresher = { for this in [var.asg_instance_refresher] : this => this if var.asg_instance_refresher }
+}
+
+resource "terraform_data" "asg_instance_refresher" {
+  for_each = local.asg_instance_refresher
+
+  triggers_replace = [
+    sha1(aws_launch_template.web_lt.user_data)
+  ]
+
+  # automatically uses latest launch template version
+  provisioner "local-exec" {
+    command = format(
+      "aws autoscaling start-instance-refresh --auto-scaling-group-name %s --preferences %#v --region %s",
+      aws_autoscaling_group.web_asg.name,
+      # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
+      jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 }),
+      local.region
+    )
   }
 }
 
