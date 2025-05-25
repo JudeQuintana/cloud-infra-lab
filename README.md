@@ -84,6 +84,7 @@ Auto Scaling Group (ASG):
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Auto deploy instance refresh using latest launch template version after the launch template is modfied.
+  - The config prioritizes availability (launch before terminate) over cost control (termainate before launch).
   - Only one instance refresh can be run at a time or it will error.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`
   - Current demo configuration will take up to 10min for a refresh to finish.
