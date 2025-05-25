@@ -205,7 +205,6 @@ resource "terraform_data" "asg_instance_refresher" {
 }
 
 ### CoudWatch Alarms for Scaling in and out
-
 # scale out based on cpu
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = format("%s-%s", var.env_prefix, "scale-out")
