@@ -206,7 +206,7 @@ resource "terraform_data" "asg_instance_refresher" {
       if [ "$VERSION" != "1" ]; then
         aws autoscaling start-instance-refresh \
           --auto-scaling-group-name ${aws_autoscaling_group.web_asg.name} \
-          --preferences ${jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 })} \
+          --preferences '${jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 })}' \
           --region ${local.region}
       fi
     EOT
