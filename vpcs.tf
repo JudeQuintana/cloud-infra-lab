@@ -58,7 +58,7 @@ module "vpcs" {
   source  = "JudeQuintana/tiered-vpc-ng/aws"
   version = "1.0.7"
 
-  for_each = { for t in local.vpcs : t.name => t }
+  for_each = { for this in local.vpcs : this.name => this }
 
   env_prefix       = var.env_prefix
   region_az_labels = var.region_az_labels
@@ -66,6 +66,6 @@ module "vpcs" {
 }
 
 locals {
-  vpc_names = { for v in module.vpcs : v.name => v.name }
+  vpc_names = { for this in module.vpcs : this.name => this.name }
 }
 

@@ -84,6 +84,11 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
+- Auto deploy instance refresh using latest launch template version after the launch template is modfied.
+  - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
+  - Only one instance refresh can be run at a time or it will error.
+  - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`
+  - Current demo configuration will take up to 10min for a refresh to finish.
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -95,6 +100,7 @@ NGINX reverse proxy + Socat Health Checks:
 Amazon RDS (MySQL):
 - Multi-AZ with encryption via custom KMS key.
 - Access controlled by SGs (only from ASG instances).
+- Secrets (MySQL creds) stored in AWS Secrets Manager.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
@@ -104,11 +110,6 @@ Scaling Behavior:
 - Scale Out: if average CPU > 70% for 2 minutes.
 - Scale In: if average CPU < 30% for 2 minutes.
 - Policies managed via CloudWatch alarms + ASG.
-
-Secure Practices:
-- Secrets (MySQL creds) stored in AWS Secrets Manager.
-- TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
-- RDS encrypted with custom KMS CMK.
 
 VPC:
 - Uses Tiered VPC-NG module.
