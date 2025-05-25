@@ -180,6 +180,7 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 }
 
+### ASG Instance refresher launch before terminate
 locals {
   asg_instance_refresher = { for this in [var.asg_instance_refresher] : this => this if var.asg_instance_refresher }
 }
@@ -202,6 +203,8 @@ resource "terraform_data" "asg_instance_refresher" {
     )
   }
 }
+
+### CoudWatch Alarms for Scaling in and out
 
 # scale out based on cpu
 resource "aws_autoscaling_policy" "scale_out" {
