@@ -159,9 +159,9 @@ resource "aws_autoscaling_group" "web_asg" {
     version = "$Latest"
   }
 
-  # This tells Auto Scaling to keep 100% of your desired capacity healthy before it starts terminating old instances,
+  # This tells the asg to keep 100% of your desired capacity healthy before it starts terminating old instances,
   # and allows it to exceed capacity by up to 50% during replacements.
-  # This coincides with terraform_data.asg_instance_refresher to get launch before terminate behavior.
+  # This coincides with terraform_data.asg_instance_refresher to get 'launch before terminate' behavior.
   instance_maintenance_policy {
     min_healthy_percentage = 100
     max_healthy_percentage = 150
