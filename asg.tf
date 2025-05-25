@@ -144,7 +144,7 @@ resource "aws_launch_template" "web_lt" {
 resource "aws_autoscaling_group" "web_asg" {
   name             = format("%s-%s", var.env_prefix, "web-asg")
   min_size         = 2
-  max_size         = 6
+  max_size         = 8
   desired_capacity = 2
   vpc_zone_identifier = [
     lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy1"),
