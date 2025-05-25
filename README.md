@@ -46,7 +46,7 @@ IPAM Configuration:
 ### Begin Demo
 Build:
 - `terraform init`
-- `terraform apply`
+- `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
 - profit!
 
 Tear Down:
