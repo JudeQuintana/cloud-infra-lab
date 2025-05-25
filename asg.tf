@@ -44,7 +44,6 @@ locals {
       - echo 'export MYSQL_PASS="${local.mysql.pass}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_DB="${local.mysql.db}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.mysql.timeout}"' >> /etc/profile.d/app_env.sh
-      - chmod +x /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
@@ -68,8 +67,6 @@ locals {
         fi
         EOF
 
-      - chmod +x /usr/local/bin/app1_handler.sh /usr/local/bin/app2_handler.sh
-
       - |
         cat > /usr/local/bin/app1.sh <<'EOF'
         #!/bin/bash
@@ -82,6 +79,7 @@ locals {
         socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
         EOF
 
+      - chmod +x /usr/local/bin/app1_handler.sh /usr/local/bin/app2_handler.sh
       - chmod +x /usr/local/bin/app1.sh /usr/local/bin/app2.sh
       - nohup /usr/local/bin/app1.sh > /var/log/app1.log 2>&1 &
       - nohup /usr/local/bin/app2.sh > /var/log/app2.log 2>&1 &
@@ -193,16 +191,25 @@ resource "terraform_data" "asg_instance_refresher" {
   ]
 
   # Automatically uses latest launch template version.
-  # Must wait until it finishes before starting a new one otherwise the command will error.
+  # Must wait until it finishes before starting a new one (10min+ depending on config) otherwise the command will error.
   # An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
+  # Dont run instance refresh command on first version of the launch template (unnecessary) but will run on subsequent changes to user_data in the launch template.
+  # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
   provisioner "local-exec" {
-    command = format(
-      "aws autoscaling start-instance-refresh --auto-scaling-group-name %s --preferences %#v --region %s",
-      aws_autoscaling_group.web_asg.name,
-      # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
-      jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 }),
-      local.region
-    )
+    command = <<-EOT
+      # fetch the LT’s latest version number
+      VERSION=$(aws ec2 describe-launch-templates \
+        --launch-template-ids ${aws_launch_template.web_lt.id} \
+        --query 'LaunchTemplates[0].LatestVersionNumber' --output text \
+        --region ${local.region})
+
+      if [ "$VERSION" != "1" ]; then
+        aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name ${aws_autoscaling_group.web_asg.name} \
+          --preferences ${jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 })} \
+          --region ${local.region}
+      fi
+    EOT
   }
 }
 
