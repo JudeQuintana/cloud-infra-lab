@@ -114,7 +114,7 @@ locals {
             }
 
             location / {
-              return 200 "Health: OK: MaD GrEEtz! #End2EndBurner";
+              return 200 "Health: OK: MaD GrEEtz! #End2EndBurner #StayUp";
             }
           }
         }

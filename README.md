@@ -83,6 +83,10 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
+- Auto deploy instance refresh using latest launch template version after the launch template is modfied.
+  - Only one instance refresh can be run at a time.
+  - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg`
+  - Current demo configuration will take up to 10min for a refresh to finish.
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -106,7 +110,7 @@ Scaling Behavior:
 
 Secure Practices:
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- TLS via ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
+- TLS via ACM.
 - RDS encrypted with custom KMS CMK.
 
 VPC:
