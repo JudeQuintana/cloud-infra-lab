@@ -84,7 +84,7 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
-- Auto deploy instance refresh using latest launch template version after the launch template user_data is modified.
+- Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
   - Only one instance refresh can be run at a time or it will error.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`.
