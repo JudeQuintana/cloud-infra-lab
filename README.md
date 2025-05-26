@@ -115,3 +115,32 @@ VPC:
 - Requires IPAM.
 - VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 
+### Pros and Cons of using a reverse proxy to access RDS (according to ChatGPT)
+Advantages:
+- Horizontal scalability.
+  - ASG lets you scale NGINX nodes based on CPU, connections, etc.
+- Managed ingress.
+  - ALB handles TLS termination, health checks, and routing to NGINX instances cleanly.
+- Separation of concerns.
+  - NGINX handles HTTP logic (e.g., authentication, load balancing), MySQL stays private.
+- Custom routing logic.
+  - You can implement advanced logic like conditional proxying, auth, throttling, etc.
+- Can front many apps.
+  - One NGINX can proxy to multiple backends, including MySQL-checking microservices.
+
+Limitations:
+- NGINX is not a MySQL proxy.
+  - NGINX is built for HTTP, not stateful MySQL TCP connections.
+  - You cannot proxy raw MySQL traffic through NGINX.
+- Unnecessary complexity.
+  - If just connecting to MySQL from backend apps, NGINX is likely overkill.
+- Extra latency.
+  - Adds a hop: ALB → NGINX → app → MySQL.
+  - This could slightly slow down reads/writes if not designed carefully.
+- Scaling not tied to DB load
+  - Scaling NGINX does not help with MySQL bottlenecks unless your NGINX is doing significant compute (auth, caching, etc.).
+- Maintains state poorly.
+  - MySQL connections are long-lived and stateful, not ideal for stateless NGINX workers.
+- Not resilient to MySQL issues.
+  - If MySQL becomes slow/unavailable, NGINX becomes a bottleneck or fails with 5xx unless you explicitly handle those errors.
+
