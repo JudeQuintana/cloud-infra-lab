@@ -16,13 +16,13 @@
 --=[ #StayUp | #End2EndBurner ]=--
 ```
 
-### Intro
+## Intro
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes. Beginner to intermediate level. Enjoy!
 
-### Architecture
+## Architecture
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
-### Prerequisites
+## Prerequisites
 AWS:
 - `aws` cli installed and configured.
 
@@ -43,7 +43,7 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
-### Begin Demo
+## Begin Demo
 Build:
 - `terraform init`
 - `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
@@ -61,7 +61,7 @@ Tear Down:
 - Delete snapshot that was created when destroying the DB.
   - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-mysql-final-snapshot --region us-west-2`
 
-### Endpoints
+## Endpoints
 Health Check:
 - `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
 
@@ -69,14 +69,14 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL OK (or MySQL Error)`
 - `https://cloud.some.domain/app2` -> `App2: MySQL OK (or MySQL Error)`
 
-### TODO
+## TODO
 Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
 - `rds.tf`
 - `rds_proxy.tf`
 
-### Components
+## Components
 Application Load Balancer (ALB):
 - HTTPS (TLS 1.2 & 1.3) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
 
@@ -115,4 +115,33 @@ VPC:
 - Uses Tiered VPC-NG module.
 - Requires IPAM.
 - VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+
+## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
+Advantages:
+- Horizontal scalability.
+  - ASG lets you scale NGINX nodes based on CPU, connections, etc.
+- Managed ingress.
+  - ALB handles TLS termination, health checks, and routing to NGINX instances cleanly.
+- Separation of concerns.
+  - NGINX handles HTTP logic (e.g., authentication, load balancing), MySQL stays private.
+- Custom routing logic.
+  - You can implement advanced logic like conditional proxying, auth, throttling, etc.
+- Can front many apps.
+  - One NGINX can proxy to multiple backends, including MySQL-checking microservices.
+
+Limitations:
+- NGINX is not a MySQL proxy.
+  - NGINX is built for HTTP, not stateful MySQL TCP connections.
+  - You cannot proxy raw MySQL traffic through NGINX.
+- Unnecessary complexity.
+  - If just connecting to MySQL from backend apps, NGINX is likely overkill.
+- Extra latency.
+  - Adds a hop: ALB → NGINX → app → MySQL.
+  - This could slightly slow down reads/writes if not designed carefully.
+- Scaling not tied to DB load
+  - Scaling NGINX does not help with MySQL bottlenecks unless your NGINX is doing significant compute (auth, caching, etc.).
+- Maintains state poorly.
+  - MySQL connections are long-lived and stateful, not ideal for stateless NGINX workers.
+- Not resilient to MySQL issues.
+  - If MySQL becomes slow/unavailable, NGINX becomes a bottleneck or fails with 5xx unless you explicitly handle those errors.
 

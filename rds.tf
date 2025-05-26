@@ -35,10 +35,13 @@ locals {
     port     = 3306
     timeout  = 3
   }
+
+  rds_identifier          = format("%s-%s", var.env_prefix, "app-mysql")
+  rds_final_snapshot_name = format("%s-%s", local.rds_identifier, "final-snapshot")
 }
 
 resource "aws_db_instance" "mysql" {
-  identifier                = format("%s-%s", var.env_prefix, "app-mysql")
+  identifier                = local.rds_identifier
   engine                    = "mysql"
   engine_version            = "8.0"
   instance_class            = "db.t3.micro"
@@ -50,7 +53,7 @@ resource "aws_db_instance" "mysql" {
   db_subnet_group_name      = aws_db_subnet_group.mysql.name
   storage_encrypted         = true
   kms_key_id                = aws_kms_key.rds.arn
-  final_snapshot_identifier = format("%s-%s", var.env_prefix, "app-mysql-final-snapshot")
+  final_snapshot_identifier = local.rds_final_snapshot_name
   db_name                   = local.rds_connection.db_name
   username                  = local.rds_connection.username
   password                  = local.rds_connection.password

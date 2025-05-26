@@ -38,8 +38,12 @@ resource "aws_acm_certificate_validation" "cert" {
 
 ### ALB
 ### Target Group
+locals {
+  alb_name = format("%s-%s", var.env_prefix, "app-alb")
+}
+
 resource "aws_lb" "alb" {
-  name               = format("%s-%s", var.env_prefix, "app-alb")
+  name               = local.alb_name
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets = [
@@ -48,8 +52,12 @@ resource "aws_lb" "alb" {
   ]
 }
 
+locals {
+  alb_tg_name = format("%s-%s", var.env_prefix, "app-alb-tg")
+}
+
 resource "aws_lb_target_group" "tg" {
-  name     = format("%s-%s", var.env_prefix, "app-alb-tg")
+  name     = local.alb_tg_name
   port     = 80
   protocol = "HTTP"
   vpc_id   = lookup(module.vpcs, local.vpc_names.app).id

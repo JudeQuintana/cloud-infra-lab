@@ -148,8 +148,13 @@ resource "aws_launch_template" "web_lt" {
   }
 }
 
+locals {
+  web_asg_name          = format("%s-%s", var.env_prefix, "web-asg")
+  web_asg_instance_name = format("%s-%s", var.env_prefix, "web-instance")
+}
+
 resource "aws_autoscaling_group" "web_asg" {
-  name             = format("%s-%s", var.env_prefix, "web-asg")
+  name             = local.web_asg_name
   min_size         = 2
   max_size         = 8
   desired_capacity = 2
@@ -176,7 +181,7 @@ resource "aws_autoscaling_group" "web_asg" {
 
   tag {
     key                 = "Name"
-    value               = format("%s-%s", var.env_prefix, "web-instance")
+    value               = local.web_asg_instance_name
     propagate_at_launch = true
   }
 
@@ -196,8 +201,9 @@ resource "terraform_data" "asg_instance_refresher" {
   for_each = local.asg_instance_refresher
 
   # trigger on launch template user_data or image_id changes
+  # using sha1 for unique string
   triggers_replace = [
-    sha256(aws_launch_template.web_lt.user_data),
+    sha1(aws_launch_template.web_lt.user_data),
     aws_launch_template.web_lt.image_id
   ]
 
@@ -226,8 +232,15 @@ resource "terraform_data" "asg_instance_refresher" {
 
 ### CoudWatch Alarms for Scaling in and out
 # scale out based on cpu
+locals {
+  asg_policy_scale_out_name      = format("%s-%s", var.env_prefix, "scale-out")
+  asg_policy_scale_in_name       = format("%s-%s", var.env_prefix, "scale-in")
+  cloudwatch_alarm_cpu_high_name = format("%s-%s", var.env_prefix, "cpu-high")
+  cloudwatch_alarm_cpu_low_name  = format("%s-%s", var.env_prefix, "cpu-low")
+}
+
 resource "aws_autoscaling_policy" "scale_out" {
-  name                   = format("%s-%s", var.env_prefix, "scale-out")
+  name                   = local.asg_policy_scale_out_name
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -235,7 +248,7 @@ resource "aws_autoscaling_policy" "scale_out" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = format("%s-%s", var.env_prefix, "cpu-high")
+  alarm_name          = local.cloudwatch_alarm_cpu_high_name
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -253,7 +266,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 
 # scale in based on cpu
 resource "aws_autoscaling_policy" "scale_in" {
-  name                   = format("%s-%s", var.env_prefix, "scale-in")
+  name                   = local.asg_policy_scale_in_name
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -261,7 +274,7 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = format("%s-%s", var.env_prefix, "cpu-low")
+  alarm_name          = local.cloudwatch_alarm_cpu_low_name
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
