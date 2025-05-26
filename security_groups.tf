@@ -32,13 +32,13 @@ resource "aws_security_group_rule" "alb_ingress_443_from_any" {
   protocol          = "tcp"
 }
 
-resource "aws_security_group_rule" "alb_egress_80_to_vpc_for_asg_instances" {
-  security_group_id = aws_security_group.alb_sg.id
-  cidr_blocks       = ["10.0.0.0/18"]
-  type              = "egress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
+resource "aws_security_group_rule" "alb_egress_80_to_instance_sg" {
+  security_group_id        = aws_security_group.alb_sg.id
+  source_security_group_id = aws_security_group.instance_sg.id
+  type                     = "egress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
 }
 
 ### ASG Instance
@@ -61,8 +61,8 @@ resource "aws_security_group_rule" "instance_ingress_80_from_alb_sg" {
   protocol                 = "tcp"
 }
 
-# needed to access s3 endpoints
-resource "aws_security_group_rule" "instance_egress_s3_us_west_2" {
+# needed to access s3 endpoints in us-west-2 region according to https://ip-ranges.amazonaws.com/ip-ranges.json
+resource "aws_security_group_rule" "instance_443_egress_to_s3_us_west_2" {
   security_group_id = aws_security_group.instance_sg.id
   cidr_blocks = [
     "3.5.76.0/22",
@@ -81,13 +81,13 @@ resource "aws_security_group_rule" "instance_egress_s3_us_west_2" {
 }
 
 # egress for msyql connections to rds
-resource "aws_security_group_rule" "instance_egress_3306_to_vpc_for_asg_instances_access_to_rds" {
-  security_group_id = aws_security_group.instance_sg.id
-  cidr_blocks       = ["10.0.0.0/18"]
-  type              = "egress"
-  from_port         = 3306
-  to_port           = 3306
-  protocol          = "tcp"
+resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
+  security_group_id        = aws_security_group.instance_sg.id
+  source_security_group_id = aws_security_group.mysql_sg.id
+  type                     = "egress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
 }
 
 ### MySQL
@@ -100,7 +100,7 @@ resource "aws_security_group" "mysql_sg" {
   }
 }
 
-resource "aws_security_group_rule" "mysql_ingress" {
+resource "aws_security_group_rule" "mysql_ingress_3306_from_instance_sg" {
   security_group_id        = aws_security_group.mysql_sg.id
   source_security_group_id = aws_security_group.instance_sg.id
   type                     = "ingress"
@@ -110,7 +110,7 @@ resource "aws_security_group_rule" "mysql_ingress" {
 }
 
 # needed for rds to connect to other aws services
-resource "aws_security_group_rule" "mysql_egress" {
+resource "aws_security_group_rule" "mysql_egress_all_to_any" {
   security_group_id = aws_security_group.mysql_sg.id
   cidr_blocks       = ["0.0.0.0/0"]
   type              = "egress"
