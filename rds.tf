@@ -60,7 +60,7 @@ resource "aws_db_instance" "mysql" {
   port                      = local.rds_connection.port
 
   tags = {
-    Name = format("%s-%s", var.env_prefix, "app-mysql")
+    Name = local.rds_identifier
   }
 }
 
