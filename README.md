@@ -16,13 +16,13 @@
 --=[ #StayUp | #End2EndBurner ]=--
 ```
 
-### Intro
+## Intro
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes. Beginner to intermediate level. Enjoy!
 
-### Architecture
+## Architecture
 ![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
 
-### Prerequisites
+## Prerequisites
 AWS:
 - `aws` cli installed and configured.
 
@@ -43,7 +43,7 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
-### Begin Demo
+## Begin Demo
 Build:
 - `terraform init`
 - `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
@@ -61,7 +61,7 @@ Tear Down:
 - Delete snapshot that was created when destroying the DB.
   - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-mysql-final-snapshot --region us-west-2`
 
-### Endpoints
+## Endpoints
 Health Check:
 - `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
 
@@ -69,13 +69,13 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL OK (or MySQL Error)`
 - `https://cloud.some.domain/app2` -> `App2: MySQL OK (or MySQL Error)`
 
-### TODO
+## TODO
 Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
 - `rds.tf`
 
-### Components
+## Components
 Application Load Balancer (ALB):
 - HTTPS (TLS 1.2 & 1.3) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
 
@@ -115,7 +115,7 @@ VPC:
 - Requires IPAM.
 - VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 
-### Pros and Cons of using a reverse proxy to access RDS (according to ChatGPT)
+## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:
 - Horizontal scalability.
   - ASG lets you scale NGINX nodes based on CPU, connections, etc.
