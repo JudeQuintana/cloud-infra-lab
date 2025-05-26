@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "alb_ingress_443_from_any" {
 
 resource "aws_security_group_rule" "alb_egress_80_to_vpc_for_asg_instances" {
   security_group_id = aws_security_group.alb_sg.id
-  cidr_blocks       = ["10.0.0.0/20"]
+  cidr_blocks       = ["10.0.0.0/18"]
   type              = "egress"
   from_port         = 80
   to_port           = 80
@@ -83,7 +83,7 @@ resource "aws_security_group_rule" "instance_egress_s3_us_west_2" {
 # egress for msyql connections to rds
 resource "aws_security_group_rule" "instance_egress_3306_to_vpc_for_asg_instances_access_to_rds" {
   security_group_id = aws_security_group.instance_sg.id
-  cidr_blocks       = ["10.0.0.0/20"]
+  cidr_blocks       = ["10.0.0.0/18"]
   type              = "egress"
   from_port         = 3306
   to_port           = 3306
