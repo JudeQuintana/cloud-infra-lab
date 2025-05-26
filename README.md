@@ -88,7 +88,7 @@ Auto Scaling Group (ASG):
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
   - Only one instance refresh can be run at a time or it will error.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`.
-  - Current demo configuration will take up to 10min for a refresh to finish.
+  - Current demo configuration will take up to 10min for a refresh to finish or manually cancel.
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.

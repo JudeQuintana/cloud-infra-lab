@@ -132,8 +132,13 @@ locals {
   )
 }
 
+locals {
+  launch_template_name_prefix  = format("%s-%s", var.env_prefix, "web-")
+  web_lt_and_asg_instance_name = format("%s-%s", var.env_prefix, "web-instance")
+}
+
 resource "aws_launch_template" "web_lt" {
-  name_prefix            = format("%s-%s", var.env_prefix, "web-")
+  name_prefix            = local.launch_template_name_prefix
   image_id               = data.aws_ami.al2023.id
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
@@ -143,14 +148,13 @@ resource "aws_launch_template" "web_lt" {
     resource_type = "instance"
 
     tags = {
-      Name = format("%s-%s", var.env_prefix, "web-instance")
+      Name = local.web_lt_and_asg_instance_name
     }
   }
 }
 
 locals {
-  web_asg_name          = format("%s-%s", var.env_prefix, "web-asg")
-  web_asg_instance_name = format("%s-%s", var.env_prefix, "web-instance")
+  web_asg_name = format("%s-%s", var.env_prefix, "web-asg")
 }
 
 resource "aws_autoscaling_group" "web_asg" {
@@ -181,7 +185,7 @@ resource "aws_autoscaling_group" "web_asg" {
 
   tag {
     key                 = "Name"
-    value               = local.web_asg_instance_name
+    value               = local.web_lt_and_asg_instance_name
     propagate_at_launch = true
   }
 
