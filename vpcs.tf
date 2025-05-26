@@ -15,6 +15,7 @@ locals {
   ipv4_ipam_pool_usw2 = data.aws_vpc_ipam_pool.ipv4_usw2
 
   # INFO: ASG can spin up without a NATWGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
+  # This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
   #
   # NOTE: Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   # It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
