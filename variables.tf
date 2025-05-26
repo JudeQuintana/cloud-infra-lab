@@ -22,7 +22,7 @@ variable "zone_name" {
 }
 
 variable "asg_instance_refresher" {
-  description = "Start a launch before terminate asg instance refresh using the latest launch template automatically after the launch template has been modified."
+  description = "Start a launch before terminate asg instance refresh using the latest launch template automatically after the launch template user_data has been modified."
   type        = bool
   default     = true
 }
