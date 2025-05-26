@@ -187,8 +187,9 @@ resource "terraform_data" "asg_instance_refresher" {
   for_each = local.asg_instance_refresher
 
   # trigger on launch template user_data or image_id changes
+  # using sha1 for unique string
   triggers_replace = [
-    sha256(aws_launch_template.web_lt.user_data),
+    sha1(aws_launch_template.web_lt.user_data),
     aws_launch_template.web_lt.image_id
   ]
 
