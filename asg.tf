@@ -123,8 +123,12 @@ locals {
   )
 }
 
+locals {
+  launch_template_name_prefix = format("%s-%s", var.env_prefix, "web-")
+}
+
 resource "aws_launch_template" "web_lt" {
-  name_prefix            = format("%s-%s", var.env_prefix, "web-")
+  name_prefix            = local.launch_template_name_prefix
   image_id               = data.aws_ami.al2023.id
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
