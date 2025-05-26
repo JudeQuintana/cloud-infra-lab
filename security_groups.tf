@@ -119,3 +119,40 @@ resource "aws_security_group_rule" "mysql_egress" {
   protocol          = -1
 }
 
+resource "aws_security_group_rule" "mysql_ingress_from_rds_proxy_sg" {
+  security_group_id        = aws_security_group.mysql_sg.id
+  source_security_group_id = aws_security_group.rds_proxy_sg.id
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+}
+
+### RDS Proxy
+resource "aws_security_group" "rds_proxy_sg" {
+  name   = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+
+  tags = {
+    Name = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+  }
+}
+
+resource "aws_security_group_rule" "rds_proxy_ingress_from_instance_sg" {
+  security_group_id        = aws_security_group.rds_proxy_sg.id
+  source_security_group_id = aws_security_group.instance_sg.id
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "rds_proxy_egress_to_mysql_sg" {
+  security_group_id        = aws_security_group.rds_proxy_sg.id
+  source_security_group_id = aws_security_group.mysql_sg.id
+  type                     = "egress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+}
+

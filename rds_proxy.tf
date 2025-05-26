@@ -24,7 +24,7 @@ resource "aws_db_proxy" "rds_proxy" {
   name                   = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
   engine_family          = "MYSQL"
   role_arn               = aws_iam_role.rds_proxy.arn
-  vpc_security_group_ids = [aws_security_group.mysql_sg.id]
+  vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
   vpc_subnet_ids = [
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
@@ -45,7 +45,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 }
 
-# need this wait until rds instance to have available hosts to bypass error on apply:
+# Need this wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
 # InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
 resource "terraform_data" "wait_for_rds" {
   provisioner "local-exec" {
