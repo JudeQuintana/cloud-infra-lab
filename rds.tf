@@ -10,20 +10,28 @@ resource "aws_kms_key" "rds" {
   enable_key_rotation     = true
 }
 
+locals {
+  kms_alias_name = format("alias/%s-%s", var.env_prefix, "rds-mysql")
+}
+
 resource "aws_kms_alias" "rds" {
-  name          = format("alias/%s-%s", var.env_prefix, "rds-mysql")
+  name          = local.kms_alias_name
   target_key_id = aws_kms_key.rds.key_id
 }
 
+locals {
+  db_subnet_group_name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
+}
+
 resource "aws_db_subnet_group" "mysql" {
-  name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
+  name = local.db_subnet_group_name
   subnet_ids = [
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
     lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
   ]
 
   tags = {
-    Name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
+    Name = local.db_subnet_group_name
   }
 }
 
@@ -60,7 +68,7 @@ resource "aws_db_instance" "mysql" {
   port                      = local.rds_connection.port
 
   tags = {
-    Name = format("%s-%s", var.env_prefix, "app-mysql")
+    Name = local.rds_identifier
   }
 }
 
