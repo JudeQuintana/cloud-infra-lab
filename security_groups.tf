@@ -1,6 +1,6 @@
 ### ALB
 locals {
-  alb_sg_name = format("%s-%s", var.env_prefix, "alb-sg")
+  alb_sg_name = format(local.name_fmt, var.env_prefix, "alb-sg")
 }
 
 resource "aws_security_group" "alb_sg" {
@@ -47,7 +47,7 @@ resource "aws_security_group_rule" "alb_egress_80_to_instance_sg" {
 
 ### ASG Instance
 locals {
-  instance_sg_name = format("%s-%s", var.env_prefix, "instance-sg")
+  instance_sg_name = format(local.name_fmt, var.env_prefix, "instance-sg")
 }
 
 resource "aws_security_group" "instance_sg" {
@@ -100,7 +100,7 @@ resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
 
 ### MySQL
 locals {
-  mysql_sg_name = format("%s-%s", var.env_prefix, "mysql-sg")
+  mysql_sg_name = format(local.name_fmt, var.env_prefix, "mysql-sg")
 }
 
 resource "aws_security_group" "mysql_sg" {

@@ -39,7 +39,7 @@ resource "aws_acm_certificate_validation" "cert" {
 ### ALB
 ### Target Group
 locals {
-  alb_name = format("%s-%s", var.env_prefix, "app-alb")
+  alb_name = format(local.name_fmt, var.env_prefix, "app-alb")
 }
 
 resource "aws_lb" "alb" {
@@ -53,7 +53,7 @@ resource "aws_lb" "alb" {
 }
 
 locals {
-  alb_tg_name = format("%s-%s", var.env_prefix, "app-alb-tg")
+  alb_tg_name = format(local.name_fmt, var.env_prefix, "app-alb-tg")
 }
 
 resource "aws_lb_target_group" "tg" {
