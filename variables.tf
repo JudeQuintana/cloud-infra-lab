@@ -24,9 +24,10 @@ variable "zone_name" {
 variable "asg_instance_refresher" {
   description = "Start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template user_data or image_id has been modified."
   type        = bool
-  default     = false
+  default     = true
 }
 
+# TODO: finish wiring up
 variable "rds_proxy" {
   description = "Build an RDS proxy in front of RDS DB."
   type        = bool
