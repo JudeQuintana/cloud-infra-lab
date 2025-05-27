@@ -133,8 +133,8 @@ locals {
 }
 
 locals {
-  launch_template_name_prefix  = format("%s-%s", var.env_prefix, "web-")
-  web_lt_and_asg_instance_name = format("%s-%s", var.env_prefix, "web-instance")
+  launch_template_name_prefix  = format(local.name_fmt, var.env_prefix, "web-")
+  web_lt_and_asg_instance_name = format(local.name_fmt, var.env_prefix, "web-instance")
 }
 
 resource "aws_launch_template" "web_lt" {
@@ -154,7 +154,7 @@ resource "aws_launch_template" "web_lt" {
 }
 
 locals {
-  web_asg_name = format("%s-%s", var.env_prefix, "web-asg")
+  web_asg_name = format(local.name_fmt, var.env_prefix, "web-asg")
 }
 
 resource "aws_autoscaling_group" "web_asg" {
@@ -237,10 +237,10 @@ resource "terraform_data" "asg_instance_refresher" {
 ### CoudWatch Alarms for Scaling in and out
 # scale out based on cpu
 locals {
-  asg_policy_scale_out_name      = format("%s-%s", var.env_prefix, "scale-out")
-  asg_policy_scale_in_name       = format("%s-%s", var.env_prefix, "scale-in")
-  cloudwatch_alarm_cpu_high_name = format("%s-%s", var.env_prefix, "cpu-high")
-  cloudwatch_alarm_cpu_low_name  = format("%s-%s", var.env_prefix, "cpu-low")
+  asg_policy_scale_out_name      = format(local.name_fmt, var.env_prefix, "scale-out")
+  asg_policy_scale_in_name       = format(local.name_fmt, var.env_prefix, "scale-in")
+  cloudwatch_alarm_cpu_high_name = format(local.name_fmt, var.env_prefix, "cpu-high")
+  cloudwatch_alarm_cpu_low_name  = format(local.name_fmt, var.env_prefix, "cpu-low")
 }
 
 resource "aws_autoscaling_policy" "scale_out" {

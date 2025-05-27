@@ -20,7 +20,7 @@ resource "aws_kms_alias" "rds" {
 }
 
 locals {
-  db_subnet_group_name = format("%s-%s", var.env_prefix, "mysql-subnet-group")
+  db_subnet_group_name = format(local.name_fmt, var.env_prefix, "mysql-subnet-group")
 }
 
 resource "aws_db_subnet_group" "mysql" {
@@ -44,8 +44,8 @@ locals {
     timeout  = 3
   }
 
-  rds_identifier          = format("%s-%s", var.env_prefix, "app-mysql")
-  rds_final_snapshot_name = format("%s-%s", local.rds_identifier, "final-snapshot")
+  rds_identifier          = format(local.name_fmt, var.env_prefix, "app-mysql")
+  rds_final_snapshot_name = format(local.name_fmt, local.rds_identifier, "final-snapshot")
 }
 
 resource "aws_db_instance" "mysql" {
