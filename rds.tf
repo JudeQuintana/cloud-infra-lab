@@ -72,10 +72,3 @@ resource "aws_db_instance" "mysql" {
   }
 }
 
-locals {
-  rds_connection_with_host = merge(
-    local.rds_connection,
-    { host = aws_db_instance.mysql.address }
-  )
-}
-
