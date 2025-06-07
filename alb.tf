@@ -1,5 +1,5 @@
 locals {
-  domain_name = format("%s.%s", "cloud", var.zone_name) # cloud.jq1.io
+  domain_name = format("%s.%s", "cloud", var.zone_name) # cloud.some.domain
 }
 
 ### Existing DNS zone

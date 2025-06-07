@@ -5,6 +5,7 @@ data "aws_vpc_ipam_pool" "ipv4_usw2" {
     name   = "description"
     values = ["ipv4-test-usw2"]
   }
+
   filter {
     name   = "address-family"
     values = ["ipv4"]
