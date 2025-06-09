@@ -5,6 +5,7 @@ data "aws_vpc_ipam_pool" "ipv4_usw2" {
     name   = "description"
     values = ["ipv4-test-usw2"]
   }
+
   filter {
     name   = "address-family"
     values = ["ipv4"]
@@ -19,7 +20,7 @@ locals {
   #
   # NOTE: Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   # It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
-  # example: https://github.com/JudeQuintana/terraform-main/tree/main/dual_stack_full_mesh_trio_demo
+  # example: https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo
   vpcs = [
     {
       name = "app"
