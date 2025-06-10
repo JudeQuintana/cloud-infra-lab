@@ -83,6 +83,9 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
+- Instances can spin up without a NATWGW because there's an S3 gateway.
+  - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
+- It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
 - Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
   - Only one instance refresh can be run at a time or it will error.
@@ -114,6 +117,9 @@ VPC:
 - Uses Tiered VPC-NG module.
 - Requires IPAM.
 - VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+- Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
+  - It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
+  - example: [Centralized Egress Demo](https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo)
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:
