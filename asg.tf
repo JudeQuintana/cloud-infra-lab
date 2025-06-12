@@ -181,7 +181,7 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 
   # will launch with initial desired_capacity value
-  # but need to ignore future values to let cloudwatch control scaling out and in
+  # but need to ignore future values to let cloudwatch control scaling out and in which will change the value (comment lifecycle block to take over controlling desired_capactity via TF)
   # It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
   lifecycle {
     ignore_changes = [desired_capacity]
