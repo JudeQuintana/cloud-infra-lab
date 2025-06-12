@@ -31,6 +31,8 @@ Zone and Domain:
   - Must own the DNS zone via some domain registrar with the DNS servers pointed to the Route53 zone name servers.
   - Demo looks up the zone resource by name.
 - Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L21) to your own zone.
+  - The `cloud.some.domain` DNS record will be created from the `var.zone_name` (ie. `var.zone_name = "jq1.io"` -> `output.url = "https://cloud.jq1.io"`)
+  - Demo is not configured for an apex domain at this time.
 
 IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
