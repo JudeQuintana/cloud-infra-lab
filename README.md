@@ -24,7 +24,7 @@ First time using ChatGPT to assist my AWS and Terraform knowledge in building an
 
 ## Prerequisites
 AWS:
-- `aws` cli installed and configured.
+- `aws` cli installed and configured with an AWS account.
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
@@ -85,7 +85,7 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
-- Instances can spin up without a NATWGW because there's an S3 gateway.
+- Instances can spin up without a NATGW because there's an S3 gateway.
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
 - Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
