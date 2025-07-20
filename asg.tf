@@ -4,7 +4,7 @@ data "aws_ami" "al2023" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-kernel-5.10-hvm-2.0.*"]
+    values = ["al2023-ami-2023*"]
   }
 
   filter {
@@ -31,14 +31,11 @@ locals {
     #cloud-config
     package_update: true
     packages:
+      - mariadb105
+      - nginx
       - socat
-      - mysql
 
     runcmd:
-      - amazon-linux-extras enable nginx1
-      - yum clean metadata
-      - yum install -y nginx
-
       - echo 'export MYSQL_HOST="${local.mysql.host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_READ_REPLICA_HOST="${local.mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PORT="${local.mysql.port}"' >> /etc/profile.d/app_env.sh
@@ -51,8 +48,8 @@ locals {
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p "$MYSQL_PASS" "$MYSQL_DB" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
+        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL OK"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary ERROR"
         fi
@@ -62,8 +59,8 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        if mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p "$MYSQL_PASS" "$MYSQL_DB" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
+        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL OK"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR"
         fi
