@@ -29,12 +29,28 @@ resource "aws_db_subnet_group" "mysql" {
   }
 }
 
+# valid db admin pass
+resource "random_password" "rds_password" {
+  length           = 32
+  override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%^&*()-_=+[]{}:;,.?"
+}
+
 locals {
   rds_engine                  = "mysql"
   rds_engine_version          = "8.0"
+  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)
+  rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
   rds_family                  = format("%s%s", local.rds_engine, local.rds_engine_version)
   rds_db_parameter_group_name = format(local.name_fmt, var.env_prefix, "mysql-replication")
+  rds_name                    = "app-mysql"
   rds_instance_class          = "db.t3.micro"
+  rds_connection = {
+    db_name  = "appdb"
+    username = "admin"
+    password = random_password.rds_password.result
+    port     = 3306
+    timeout  = 3
+  }
 }
 
 # needed for intra region msyql replication
@@ -52,25 +68,6 @@ resource "aws_db_parameter_group" "rds_replication" {
   }
 }
 
-# valid db admin pass
-resource "random_password" "rds_password" {
-  length           = 32
-  override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%^&*()-_=+[]{}:;,.?"
-}
-
-locals {
-  rds_connection = {
-    db_name  = "appdb"
-    username = "admin"
-    password = random_password.rds_password.result
-    port     = 3306
-    timeout  = 3
-  }
-
-  rds_name                = "app-mysql"
-  rds_identifier          = format(local.name_fmt, var.env_prefix, local.rds_name)
-  rds_final_snapshot_name = format(local.name_fmt, local.rds_identifier, "final-snapshot")
-}
 
 resource "aws_db_instance" "mysql" {
   identifier                = local.rds_identifier
