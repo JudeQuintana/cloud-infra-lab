@@ -49,7 +49,7 @@ locals {
         #!/bin/bash
         source /etc/profile.d/app_env.sh
         if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL OK"
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary ERROR"
         fi
@@ -59,8 +59,8 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL OK"
+        if mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR"
         fi
