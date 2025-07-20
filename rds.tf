@@ -36,6 +36,7 @@ resource "random_password" "rds_password" {
 }
 
 locals {
+  # cant put all rds info into an object due to some of the naming when using format
   rds_engine                  = "mysql"
   rds_engine_version          = "8.0"
   rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)
@@ -44,6 +45,7 @@ locals {
   rds_db_parameter_group_name = format(local.name_fmt, var.env_prefix, "mysql-replication")
   rds_name                    = "app-mysql"
   rds_instance_class          = "db.t3.micro"
+  rds_storage_encrypted       = true
   rds_connection = {
     db_name  = "appdb"
     username = "admin"
@@ -82,7 +84,7 @@ resource "aws_db_instance" "mysql" {
   backup_retention_period   = 7 # required greater than 0 if read replica exists
   parameter_group_name      = aws_db_parameter_group.rds_replication.name
   db_subnet_group_name      = aws_db_subnet_group.mysql.name
-  storage_encrypted         = true
+  storage_encrypted         = local.rds_storage_encrypted
   kms_key_id                = aws_kms_key.rds.arn
   final_snapshot_identifier = local.rds_final_snapshot_name
   db_name                   = local.rds_connection.db_name
@@ -112,7 +114,7 @@ resource "aws_db_instance" "read_replica" {
   vpc_security_group_ids = [aws_security_group.mysql_sg.id]
   db_subnet_group_name   = aws_db_instance.mysql.db_subnet_group_name
   skip_final_snapshot    = true # required for read replica
-  storage_encrypted      = true
+  storage_encrypted      = local.rds_storage_encrypted
 
   tags = {
     Name = local.replica_rds_identifier
