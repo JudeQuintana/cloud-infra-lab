@@ -29,7 +29,7 @@ resource "aws_db_subnet_group" "mysql" {
   }
 }
 
-# valid db admin pass
+# valid mysql db admin pass
 resource "random_password" "rds_password" {
   length           = 32
   override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%^&*()-_=+[]{}:;,.?"
@@ -70,7 +70,8 @@ resource "aws_db_parameter_group" "rds_replication" {
   }
 }
 
-
+# backup_retention_period should be set on init for replication
+# otherwise there will be non-idemptotent drift and will never update the resource
 resource "aws_db_instance" "mysql" {
   identifier                = local.rds_identifier
   engine                    = local.rds_engine
@@ -106,11 +107,11 @@ locals {
   replica_rds_identifier = format(local.name_fmt, local.rds_identifier, "replica")
 }
 
+# cannot set multi-az=true on init but can be promoted thereafter
 resource "aws_db_instance" "read_replica" {
   identifier             = local.replica_rds_identifier
   replicate_source_db    = aws_db_instance.mysql.arn
   instance_class         = local.rds_instance_class
-  availability_zone      = aws_db_instance.mysql.availability_zone # use one of the primary's AZs in same region, cant be multi-az on init but can be promoted thereafter
   vpc_security_group_ids = [aws_security_group.mysql_sg.id]
   db_subnet_group_name   = aws_db_instance.mysql.db_subnet_group_name
   skip_final_snapshot    = true # required for read replica
