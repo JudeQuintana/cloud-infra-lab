@@ -68,8 +68,8 @@ Health Check:
 - `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (or MySQL Error)`
-- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (or MySQL Error)`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (or MySQL Primary Error)`
+- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (or MySQL Read Replica Error)`
 
 ## TODO
 Modularize (OO style):
