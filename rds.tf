@@ -36,16 +36,19 @@ resource "random_password" "rds_password" {
 }
 
 locals {
-  # cant put all rds info into an object due to some of the naming when using format
+  # cant put all rds info into an object due to some of the self referenital naming when using format in an object
+  # therefore keeping them separated into separate local vars
+  rds_name                    = "app-mysql"
   rds_engine                  = "mysql"
-  rds_engine_version          = "8.0"
+  rds_engine_version          = "8.0.41"
   rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)
   rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
-  rds_family                  = format("%s%s", local.rds_engine, local.rds_engine_version)
-  rds_db_parameter_group_name = format(local.name_fmt, var.env_prefix, "mysql-replication")
-  rds_name                    = "app-mysql"
+  rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica")
+  rds_db_parameter_group_name = format(local.name_fmt, local.rds_identifier, "replication")
+  rds_family                  = "mysql8.0"
   rds_instance_class          = "db.t3.micro"
   rds_storage_encrypted       = true
+  rds_multi_az                = true
   rds_connection = {
     db_name  = "appdb"
     username = "admin"
@@ -81,7 +84,7 @@ resource "aws_db_instance" "mysql" {
   instance_class            = local.rds_instance_class
   allocated_storage         = 20
   storage_type              = "gp2"
-  multi_az                  = true
+  multi_az                  = local.rds_multi_az
   deletion_protection       = true
   vpc_security_group_ids    = [aws_security_group.mysql_sg.id]
   backup_retention_period   = 7 # required greater than 0 if read replica exists
@@ -105,22 +108,20 @@ locals {
     local.rds_connection,
     { host = aws_db_instance.mysql.address }
   )
-
-  replica_rds_identifier = format(local.name_fmt, local.rds_identifier, "replica")
 }
 
-# cannot set multi-az=true on init but can be promoted thereafter
 resource "aws_db_instance" "read_replica" {
-  identifier             = local.replica_rds_identifier
+  identifier             = local.rds_replica_identifier
   replicate_source_db    = aws_db_instance.mysql.arn
   instance_class         = local.rds_instance_class
   vpc_security_group_ids = [aws_security_group.mysql_sg.id]
   db_subnet_group_name   = aws_db_instance.mysql.db_subnet_group_name
-  skip_final_snapshot    = true # required for read replica
+  multi_az               = local.rds_multi_az
   storage_encrypted      = local.rds_storage_encrypted
+  skip_final_snapshot    = true # required for read replica
 
   tags = {
-    Name = local.replica_rds_identifier
+    Name = local.rds_replica_identifier
   }
 }
 
