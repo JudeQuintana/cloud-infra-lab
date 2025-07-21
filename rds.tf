@@ -79,6 +79,7 @@ resource "aws_db_parameter_group" "rds_replication" {
 # and the read replica will fail
 resource "aws_db_instance" "mysql" {
   identifier                = local.rds_identifier
+  apply_immediately         = var.enable_rds_apply_immediately
   engine                    = local.rds_engine
   engine_version            = local.rds_engine_version
   instance_class            = local.rds_instance_class
