@@ -70,8 +70,10 @@ resource "aws_db_parameter_group" "rds_replication" {
   }
 }
 
-# backup_retention_period should be set on init for replication
-# otherwise there will be non-idemptotent drift and will never update the resource
+# if backup_retention_period is not set at init for replication then
+# apply_immediately = true must be set to continue building the read replica
+# otherwise there will be non-idempotent drift and wont TF update the primary msyql resource (until scheduled maintenance occurs)
+# and the read replica will fail
 resource "aws_db_instance" "mysql" {
   identifier                = local.rds_identifier
   engine                    = local.rds_engine
