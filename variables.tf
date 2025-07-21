@@ -27,12 +27,6 @@ variable "asg_instance_refresher" {
   default     = true
 }
 
-variable "enable_vpc_natgws" {
-  description = "NATGW toggle for designated public subnets in each AZ (see vpcs.tf)."
-  type        = bool
-  default     = false
-}
-
 variable "enable_rds_apply_immediately" {
   description = "Sometimes you'll need set apply_immediately to true the main DB when changing values like increasing backup_retention_period from 0 to 7 (etc) if they were not applied during init. Use sparingly."
   type        = bool
