@@ -28,7 +28,7 @@ variable "asg_instance_refresher" {
 }
 
 variable "enable_natgws" {
-  description = "NATGW toggle for each configured public subnet in each AZ (see vpcs.tf)."
+  description = "NATGW toggle for designated public subnets in each AZ (see vpcs.tf)."
   type        = bool
   default     = false
 }
