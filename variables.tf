@@ -27,9 +27,3 @@ variable "asg_instance_refresher" {
   default     = true
 }
 
-variable "rds_apply_immediately" {
-  description = "Sometimes you'll need set apply_immediately to true the main DB when changing values like increasing backup_retention_period from 0 to 7 (etc) if they were not applied during init. Use sparingly."
-  type        = bool
-  default     = false
-}
-

@@ -79,7 +79,6 @@ resource "aws_db_parameter_group" "rds_replication" {
 # and the read replica will fail
 resource "aws_db_instance" "mysql" {
   identifier                = local.rds_identifier
-  apply_immediately         = var.rds_apply_immediately
   engine                    = local.rds_engine
   engine_version            = local.rds_engine_version
   instance_class            = local.rds_instance_class
@@ -88,7 +87,8 @@ resource "aws_db_instance" "mysql" {
   multi_az                  = local.rds_multi_az
   deletion_protection       = true
   vpc_security_group_ids    = [aws_security_group.mysql_sg.id]
-  backup_retention_period   = 7 # required greater than 0 if read replica exists
+  backup_retention_period   = 7     # required greater than 0 if read replica exists
+  apply_immediately         = false # sometimes you'll need to set apply_immediately to true on the main DB when changing values like increasing backup_retention_period from 0 to 7 (etc) if they were not applied during init. Then set back to false after apply. Use sparingly.
   parameter_group_name      = aws_db_parameter_group.rds_replication.name
   db_subnet_group_name      = aws_db_subnet_group.mysql.name
   storage_encrypted         = local.rds_storage_encrypted
