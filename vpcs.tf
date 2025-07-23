@@ -37,7 +37,7 @@ locals {
             { name = "proxy1", cidr = "10.0.2.0/24" }
           ]
           public_subnets = [
-            { name = "lb1", cidr = "10.0.3.0/28", natgw = true }
+            { name = "lb1", cidr = "10.0.3.0/28", natgw = false }
           ]
         }
         b = {
@@ -48,7 +48,7 @@ locals {
             { name = "proxy2", cidr = "10.0.8.0/24" }
           ]
           public_subnets = [
-            { name = "lb2", cidr = "10.0.9.0/28", natgw = true }
+            { name = "lb2", cidr = "10.0.9.0/28", natgw = false }
           ]
         }
       }

@@ -40,12 +40,12 @@ locals {
   # therefore keeping them separated into separate local vars
   rds_name                    = "app-mysql"
   rds_engine                  = "mysql"
-  rds_engine_version          = "8.0.41"
+  rds_engine_version          = "8.4.5"
   rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)
   rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
   rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica")
   rds_db_parameter_group_name = format(local.name_fmt, local.rds_identifier, "replication")
-  rds_family                  = "mysql8.0"
+  rds_family                  = "mysql8.4"
   rds_instance_class          = "db.t3.micro"
   rds_storage_encrypted       = true
   rds_multi_az                = true
@@ -58,14 +58,79 @@ locals {
   }
 }
 
-# needed for intra region msyql replication
+# binlog format parameter has been deprecated for rds replication for mysql engine 8.0.34+ and 8.4.0
+# MySQL plans to remove the parameter and only support row-based replication by default.
+# Below is an empty db parameter group as a place holder for db parameters.
+# if mysql engine is 8.0.33 and lower then a binlog_format would be required for mysql replication
+# for example:
+# parameter {
+#   name  = "binlog_format"
+#   value = "ROW"
+# }
+#
+# Below is a curated list of replication‑focused parameters that make sense for a Multi‑AZ MySQL RDS primary (which uses storage‑level sync for HA) and still drive optimal binlog behavior for any read‑replicas you attach. Most of these are dynamic (take effect on reboot) and will improve durability, replica throughput, and log management:
+# Note: Multi‑AZ failover uses storage‐level replication, not binlogs, so all binlog settings only affect HA standby’s crash recovery and any read‑replica’s behavior.
+locals {
+  mysql_db_parameters = [
+    {
+      # (Default) safest—each event contains full before/after row image.
+      name         = "binlog_row_image"
+      value        = "FULL"
+      apply_method = "immediate"
+    },
+    {
+      # Prevents “packet too large” errors during heavy transactions. (64MB)
+      name         = "max_allowed_packet"
+      value        = "67108864"
+      apply_method = "immediate"
+    },
+    {
+      # Improves performance for transactions that span many writes. (32kb)
+      name         = "binlog_cache_size"
+      value        = "32768"
+      apply_method = "pending-reboot"
+    },
+    {
+      # Enables parallel apply on replicas—tune up for larger CPUs. (~vCPUs)
+      name         = "replica_parallel_workers"
+      value        = "4"
+      apply_method = "immediate"
+    },
+    {
+      # Guarantees commit order on parallel workers—avoids anomalies.
+      name         = "replica_preserve_commit_order"
+      value        = "1"
+      apply_method = "immediate"
+    },
+    {
+      # Fsyncs binlogs on each transaction—maximum durability.
+      name         = "sync_binlog"
+      value        = "1"
+      apply_method = "pending-reboot"
+    },
+    {
+      # Flushes InnoDB redo logs on every commit—for crash safety.
+      name         = "innodb_flush_log_at_trx_commit"
+      value        = "1"
+      apply_method = "immediate"
+    }
+  ]
+
+  mysql_db_parameter_name_to_parameter = { for this in local.mysql_db_parameters : this.name => this }
+}
+
 resource "aws_db_parameter_group" "rds_replication" {
   name   = local.rds_db_parameter_group_name
   family = local.rds_family
 
-  parameter {
-    name  = "binlog_format"
-    value = "ROW"
+  dynamic "parameter" {
+    for_each = local.mysql_db_parameters
+
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method
+    }
   }
 
   tags = {
@@ -129,6 +194,7 @@ resource "aws_db_instance" "read_replica" {
 locals {
   rds_connection_with_read_replica_host = merge(
     local.rds_connection_with_host,
+    #{ read_replica_host = "blah" }
     { read_replica_host = aws_db_instance.read_replica.address }
   )
 }
