@@ -194,7 +194,6 @@ resource "aws_db_instance" "read_replica" {
 locals {
   rds_connection_with_read_replica_host = merge(
     local.rds_connection_with_host,
-    #{ read_replica_host = "blah" }
     { read_replica_host = aws_db_instance.read_replica.address }
   )
 }
