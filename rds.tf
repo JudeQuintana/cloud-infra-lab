@@ -68,69 +68,16 @@ locals {
 #   value = "ROW"
 # }
 #
-# Below is a curated list of replication‑focused parameters that make sense for a Multi‑AZ MySQL RDS primary (which uses storage‑level sync for HA) and still drive optimal binlog behavior for any read‑replicas you attach. Most of these are dynamic (take effect on reboot) and will improve durability, replica throughput, and log management:
-# Note: Multi‑AZ failover uses storage‐level replication, not binlogs, so all binlog settings only affect HA standby’s crash recovery and any read‑replica’s behavior.
-locals {
-  mysql_db_parameters = [
-    {
-      # (Default) safest—each event contains full before/after row image.
-      name         = "binlog_row_image"
-      value        = "FULL"
-      apply_method = "immediate"
-    },
-    {
-      # Prevents “packet too large” errors during heavy transactions. (64MB)
-      name         = "max_allowed_packet"
-      value        = "67108864"
-      apply_method = "immediate"
-    },
-    {
-      # Improves performance for transactions that span many writes. (32kb)
-      name         = "binlog_cache_size"
-      value        = "32768"
-      apply_method = "pending-reboot"
-    },
-    {
-      # Enables parallel apply on replicas—tune up for larger CPUs. (~vCPUs)
-      name         = "replica_parallel_workers"
-      value        = "4"
-      apply_method = "immediate"
-    },
-    {
-      # Guarantees commit order on parallel workers—avoids anomalies.
-      name         = "replica_preserve_commit_order"
-      value        = "1"
-      apply_method = "immediate"
-    },
-    {
-      # Fsyncs binlogs on each transaction—maximum durability.
-      name         = "sync_binlog"
-      value        = "1"
-      apply_method = "pending-reboot"
-    },
-    {
-      # Flushes InnoDB redo logs on every commit—for crash safety.
-      name         = "innodb_flush_log_at_trx_commit"
-      value        = "1"
-      apply_method = "immediate"
-    }
-  ]
-
-  mysql_db_parameter_name_to_parameter = { for this in local.mysql_db_parameters : this.name => this }
-}
-
+# tune the db parameter group to your db needs
 resource "aws_db_parameter_group" "rds_replication" {
   name   = local.rds_db_parameter_group_name
   family = local.rds_family
 
-  dynamic "parameter" {
-    for_each = local.mysql_db_parameters
-
-    content {
-      name         = parameter.value.name
-      value        = parameter.value.value
-      apply_method = parameter.value.apply_method
-    }
+  parameter {
+    # (Default) safest—each event contains full before/after row image.
+    name         = "binlog_row_image"
+    value        = "FULL"
+    apply_method = "immediate"
   }
 
   tags = {
