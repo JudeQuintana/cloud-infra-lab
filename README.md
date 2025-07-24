@@ -89,6 +89,7 @@ Auto Scaling Group (ASG):
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
+  - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
 - Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
@@ -98,7 +99,8 @@ Auto Scaling Group (ASG):
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
-- /app1 and /app2 return MySQL health.
+- /app1 returns primary db health.
+- /app2 returns read replica db health
 - Uses socat for reliable TCP responses.
 - Lightweight bash scripts to simulate apps.
 - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
@@ -107,6 +109,7 @@ Amazon RDS (MySQL):
 - Multi-AZ with encryption via custom KMS key.
 - Access controlled by SGs (only from ASG instances).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
+- Intra-region read replica.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
