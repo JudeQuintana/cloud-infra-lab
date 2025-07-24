@@ -109,7 +109,7 @@ Amazon RDS (MySQL):
 - Multi-AZ with encryption via custom KMS key.
 - Access controlled by SGs (only from ASG instances).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- Intra-region read replica.
+- Intra-region encrypted Multi-AZ Read Replica.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
