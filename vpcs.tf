@@ -17,6 +17,16 @@ locals {
 
   # INFO: ASG instances can spin up without a NATGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
   # This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
+  # If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set natgw = true and you'll need to add an egress security group rule to the instances security group.
+  # for example this security group rule would allow https outbound to the internet:
+  # resource "aws_security_group_rule" "instance_egress_allow_443_to_internet" {
+  #   security_group_id = aws_security_group.instance_sg.id
+  #   cidr_blocks       = ["0.0.0.0/0"]
+  #   type              = "egress"
+  #   from_port         = 443
+  #   to_port           = 443
+  #   protocol          = "tcp"
+  # }
   #
   # NOTE: Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   # It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
@@ -37,7 +47,7 @@ locals {
             { name = "proxy1", cidr = "10.0.2.0/24" }
           ]
           public_subnets = [
-            { name = "lb1", cidr = "10.0.3.0/28", natgw = true }
+            { name = "lb1", cidr = "10.0.3.0/28", natgw = false }
           ]
         }
         b = {
@@ -48,7 +58,7 @@ locals {
             { name = "proxy2", cidr = "10.0.8.0/24" }
           ]
           public_subnets = [
-            { name = "lb2", cidr = "10.0.9.0/28", natgw = true }
+            { name = "lb2", cidr = "10.0.9.0/28", natgw = false }
           ]
         }
       }

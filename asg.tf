@@ -15,15 +15,16 @@ data "aws_ami" "al2023" {
 
 locals {
   # demonstrating pulling from secretsmanager
-  # should use readonly creds instead of using admin creds to access the db but used here for demo purposes
+  # should use readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
   secretsmanager_mysql_creds = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
   mysql = {
-    host    = lookup(local.secretsmanager_mysql_creds, "host")
-    port    = lookup(local.secretsmanager_mysql_creds, "port")
-    user    = lookup(local.secretsmanager_mysql_creds, "username")
-    pass    = lookup(local.secretsmanager_mysql_creds, "password")
-    db      = lookup(local.secretsmanager_mysql_creds, "db_name")
-    timeout = lookup(local.secretsmanager_mysql_creds, "timeout")
+    host              = lookup(local.secretsmanager_mysql_creds, "host")
+    read_replica_host = lookup(local.secretsmanager_mysql_creds, "read_replica_host")
+    port              = lookup(local.secretsmanager_mysql_creds, "port")
+    user              = lookup(local.secretsmanager_mysql_creds, "username")
+    pass              = lookup(local.secretsmanager_mysql_creds, "password")
+    db                = lookup(local.secretsmanager_mysql_creds, "db_name")
+    timeout           = lookup(local.secretsmanager_mysql_creds, "timeout")
   }
 
   cloud_init = base64encode(<<-CLOUD_INIT
@@ -36,6 +37,7 @@ locals {
 
     runcmd:
       - echo 'export MYSQL_HOST="${local.mysql.host}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_READ_REPLICA_HOST="${local.mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PORT="${local.mysql.port}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_USER="${local.mysql.user}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PASS="${local.mysql.pass}"' >> /etc/profile.d/app_env.sh
@@ -46,10 +48,12 @@ locals {
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL OK"
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+
+        if [ $? -eq 0 ]; then
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
         else
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL ERROR"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary ERROR\n$ERROR_OUTPUT"
         fi
         EOF
 
@@ -57,10 +61,12 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        if mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" &>/dev/null; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL OK"
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+
+        if [ $? -eq 0 ]; then
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
         else
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL ERROR"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR\n$ERROR_OUTPUT"
         fi
         EOF
 
