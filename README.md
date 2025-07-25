@@ -65,7 +65,7 @@ Tear Down:
 
 ## Endpoints
 Health Check:
-- `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
+- `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (or MySQL Primary Error)`
