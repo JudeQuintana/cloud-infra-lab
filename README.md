@@ -72,6 +72,9 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (or MySQL Read Replica Error)`
 
 ## TODO
+- Add RDS proxy for primary and read replica DBs.
+  - Will require NATGWs.
+
 Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
