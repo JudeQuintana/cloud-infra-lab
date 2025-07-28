@@ -30,16 +30,16 @@ locals {
       - echo 'export MYSQL_HOST="${local.secretsmanager_mysql.host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_READ_REPLICA_HOST="${local.secretsmanager_mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PORT="${local.secretsmanager_mysql.port}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_USER="${local.secretsmanager_mysql.username}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_PASS="${local.secretsmanager_mysql.password}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_DB="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_USERNAME="${local.secretsmanager_mysql.username}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_PASSWORD="${local.secretsmanager_mysql.password}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_DB_NAME="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.secretsmanager_mysql.timeout}"' >> /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
@@ -52,7 +52,7 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
