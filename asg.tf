@@ -16,16 +16,7 @@ data "aws_ami" "al2023" {
 locals {
   # demonstrating pulling from secretsmanager
   # should use readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
-  secretsmanager_mysql_creds = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
-  mysql = {
-    host              = lookup(local.secretsmanager_mysql_creds, "host")
-    read_replica_host = lookup(local.secretsmanager_mysql_creds, "read_replica_host")
-    port              = lookup(local.secretsmanager_mysql_creds, "port")
-    user              = lookup(local.secretsmanager_mysql_creds, "username")
-    pass              = lookup(local.secretsmanager_mysql_creds, "password")
-    db                = lookup(local.secretsmanager_mysql_creds, "db_name")
-    timeout           = lookup(local.secretsmanager_mysql_creds, "timeout")
-  }
+  secretsmanager_mysql = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
 
   cloud_init = base64encode(<<-CLOUD_INIT
     #cloud-config
@@ -36,19 +27,19 @@ locals {
       - socat
 
     runcmd:
-      - echo 'export MYSQL_HOST="${local.mysql.host}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_READ_REPLICA_HOST="${local.mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_PORT="${local.mysql.port}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_USER="${local.mysql.user}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_PASS="${local.mysql.pass}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_DB="${local.mysql.db}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_TIMEOUT="${local.mysql.timeout}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_HOST="${local.secretsmanager_mysql.host}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_READ_REPLICA_HOST="${local.secretsmanager_mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_PORT="${local.secretsmanager_mysql.port}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_USERNAME="${local.secretsmanager_mysql.username}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_PASSWORD="${local.secretsmanager_mysql.password}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_DB_NAME="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_TIMEOUT="${local.secretsmanager_mysql.timeout}"' >> /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
@@ -61,7 +52,7 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASS" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB" 2>&1)
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
@@ -208,8 +199,8 @@ resource "terraform_data" "asg_instance_refresher" {
 
   # Automatically uses latest launch template version.
   # Must wait until it finishes before starting a new one (10min+ depending on config) otherwise the command will error.
-  # An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
-  # Dont run instance refresh command on first version of the launch template (unnecessary) but will run on subsequent changes to user_data in the launch template.
+  # - An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
+  # It won't run instance refresh command on first version of the launch template (unnecessary) but will run on subsequent changes to user_data in the launch template.
   # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
   provisioner "local-exec" {
     command = <<-EOT
