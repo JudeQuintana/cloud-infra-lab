@@ -80,6 +80,7 @@ Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
 - `rds.tf`
+- `rds_proxy.tf`
 
 ## Components
 Application Load Balancer (ALB):
