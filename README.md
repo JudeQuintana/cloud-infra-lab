@@ -20,7 +20,7 @@
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, scalable yet extendable, cloud project end-to-end for learning purposes. Beginner to intermediate level. Enjoy!
 
 ## Architecture
-![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab.png)
+![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-with-rds-replication.png)
 
 ## Prerequisites
 AWS:
@@ -29,7 +29,7 @@ AWS:
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
   - Must own the DNS zone via some domain registrar with the DNS servers pointed to the Route53 zone name servers.
-  - Demo looks up the zone resource by name.
+  - Demo will look up the zone resource by name.
 - Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L21) to your own zone.
   - The `cloud.some.domain` DNS record will be created from the `var.zone_name` (ie. `var.zone_name = "jq1.io"` -> `output.url = "https://cloud.jq1.io"`)
   - Demo is not configured for an apex domain at this time.
@@ -37,6 +37,7 @@ Zone and Domain:
 IPAM Configuration:
 - There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
 - You'll need to configure your own IPv4 pools/subpools in IPAM.
+  - Demo will look up the IPAM pools via filter on description and ipv4 type.
 - Advanced Tier IPAM in `us-west-2` operating reigons.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (ipam locale)
@@ -65,13 +66,16 @@ Tear Down:
 
 ## Endpoints
 Health Check:
-- `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz!`
+- `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL OK (or MySQL Error)`
-- `https://cloud.some.domain/app2` -> `App2: MySQL OK (or MySQL Error)`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (or MySQL Primary Error)`
+- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (or MySQL Read Replica Error)`
 
 ## TODO
+- Add RDS proxy for primary and read replica DBs.
+  - Will require NATGWs.
+
 Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
@@ -81,13 +85,16 @@ Modularize (OO style):
 ## Components
 Application Load Balancer (ALB):
 - HTTPS (TLS 1.2 & 1.3) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
+- HTTP to HTTPS Redirects
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
+  - using Mariadb as the MYSQL client.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
+  - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
 - Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
@@ -97,7 +104,8 @@ Auto Scaling Group (ASG):
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
-- /app1 and /app2 return MySQL health.
+- /app1 returns primary db health.
+- /app2 returns read replica db health
 - Uses socat for reliable TCP responses.
 - Lightweight bash scripts to simulate apps.
 - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
@@ -106,6 +114,7 @@ Amazon RDS (MySQL):
 - Multi-AZ with encryption via custom KMS key.
 - Access controlled by SGs (only from ASG instances).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
+- Intra-region encrypted Multi-AZ Read Replica.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
