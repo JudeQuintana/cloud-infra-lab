@@ -60,7 +60,6 @@ locals {
 
 # binlog format parameter has been deprecated for rds replication for mysql engine 8.0.34+ and 8.4.0
 # MySQL plans to remove the parameter and only support row-based replication by default.
-# Below is an empty db parameter group as a place holder for db parameters.
 # if mysql engine is 8.0.33 and lower then a binlog_format would be required for mysql replication
 # for example:
 # parameter {
@@ -112,13 +111,6 @@ resource "aws_db_instance" "mysql" {
   }
 }
 
-#locals {
-#rds_connection_with_host = merge(
-#local.rds_connection,
-#{ host = aws_db_instance.mysql.address }
-#)
-#}
-
 resource "aws_db_instance" "read_replica" {
   identifier             = local.rds_replica_identifier
   replicate_source_db    = aws_db_instance.mysql.arn
@@ -134,9 +126,3 @@ resource "aws_db_instance" "read_replica" {
   }
 }
 
-#locals {
-#rds_connection_with_read_replica_host = merge(
-#local.rds_connection_with_host,
-#{ read_replica_host = aws_db_instance.read_replica.address }
-#)
-#}

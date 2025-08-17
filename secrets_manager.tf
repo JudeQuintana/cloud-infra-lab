@@ -10,6 +10,6 @@ resource "aws_secretsmanager_secret" "rds" {
 
 resource "aws_secretsmanager_secret_version" "rds" {
   secret_id     = aws_secretsmanager_secret.rds.id
-  secret_string = jsonencode(local.rds_connection_with_read_replica_host)
+  secret_string = jsonencode(local.rds_connection_with_hosts)
 }
 

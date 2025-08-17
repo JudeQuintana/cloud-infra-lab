@@ -42,7 +42,6 @@ locals {
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-
         ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
@@ -56,7 +55,6 @@ locals {
         cat > /usr/local/bin/app2_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        
         ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
