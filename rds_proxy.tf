@@ -43,6 +43,11 @@ resource "aws_db_proxy" "rds_proxy" {
 
 resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
+  connection_pool_config {
+    max_connections_percent      = 75
+    max_idle_connections_percent = 50
+    connection_borrow_timeout    = 120
+  }
 }
 
 # Need this wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
@@ -55,8 +60,6 @@ resource "terraform_data" "wait_for_rds" {
       local.region
     )
   }
-
-  depends_on = [aws_db_instance.mysql]
 }
 
 resource "aws_db_proxy_target" "rds_proxy_target" {
@@ -74,5 +77,12 @@ locals {
     local.rds_connection,
     { host = aws_db_proxy.rds_proxy.endpoint }
   )
+
+  locals {
+    rds_connection_with_read_replica_host = merge(
+      local.rds_connection_with_host,
+      { read_replica_host = aws_db_instance.read_replica.address }
+    )
+  }
 }
 

@@ -27,10 +27,3 @@ variable "asg_instance_refresher" {
   default     = true
 }
 
-# TODO: finish wiring up
-variable "rds_proxy" {
-  description = "Build an RDS proxy in front of RDS DB."
-  type        = bool
-  default     = true
-}
-

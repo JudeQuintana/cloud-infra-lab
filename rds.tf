@@ -112,12 +112,12 @@ resource "aws_db_instance" "mysql" {
   }
 }
 
-locals {
-  rds_connection_with_host = merge(
-    local.rds_connection,
-    { host = aws_db_instance.mysql.address }
-  )
-}
+#locals {
+#rds_connection_with_host = merge(
+#local.rds_connection,
+#{ host = aws_db_instance.mysql.address }
+#)
+#}
 
 resource "aws_db_instance" "read_replica" {
   identifier             = local.rds_replica_identifier
@@ -134,9 +134,9 @@ resource "aws_db_instance" "read_replica" {
   }
 }
 
-locals {
-  rds_connection_with_read_replica_host = merge(
-    local.rds_connection_with_host,
-    { read_replica_host = aws_db_instance.read_replica.address }
-  )
-}
+#locals {
+#rds_connection_with_read_replica_host = merge(
+#local.rds_connection_with_host,
+#{ read_replica_host = aws_db_instance.read_replica.address }
+#)
+#}
