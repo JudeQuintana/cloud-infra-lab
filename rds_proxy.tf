@@ -37,9 +37,13 @@ resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
 }
 
 ## RDS Proxy
+locals {
+  rds_proxy_name = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
+}
+
 # the default target role is READ_WRITE for the proxy endpoint
 resource "aws_db_proxy" "rds_proxy" {
-  name                   = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
+  name                   = local.rds_proxy_name
   engine_family          = "MYSQL"
   role_arn               = aws_iam_role.rds_proxy.arn
   vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
