@@ -21,13 +21,18 @@ data "aws_iam_policy_document" "rds_proxy_secrets_read_only" {
   }
 }
 
+locals {
+  iam_policy_name = format("%s-%s", var.env_prefix, "rds-proxy-secrets-readonly")
+  iam_role_name   = format("%s-%s", var.env_prefix, "rds-proxy-role")
+}
+
 resource "aws_iam_policy" "rds_proxy_secrets_read_only" {
-  name   = format("%s-%s", var.env_prefix, "rds-proxy-secrets-readonly")
+  name   = local.iam_policy_name
   policy = data.aws_iam_policy_document.rds_proxy_secrets_read_only.json
 }
 
 resource "aws_iam_role" "rds_proxy" {
-  name               = format("%s-%s", var.env_prefix, "rds-proxy-role")
+  name               = local.iam_role_name
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
