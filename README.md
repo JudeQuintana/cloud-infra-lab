@@ -105,20 +105,26 @@ Auto Scaling Group (ASG):
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
-- /app1 returns primary db health via RDS Proxy.
-- /app2 returns read replica db health bypassing RDS Proxy.
+- /app1 returns primary db health.
+- /app2 returns read replica db health.
 - Uses socat for reliable TCP responses.
 - Lightweight bash scripts to simulate apps.
 - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
 
 Amazon RDS (MySQL):
-- Primary RDS DB Instance Multi-AZ with encryption.
+- Primary DB Instance with Multi-AZ and encryption via KMS.
+- Read Replica DB Instance (Intra-region and Multi-AZ).
 - Access controlled by SGs (only from ASG instances).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- Encrypted Intra-region Multi-AZ RDS DB Instance Read Replica.
+- RDS Proxy
+  - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
+  - Access to the read replica bypasses the RDS Proxy.
+    - This is because RDS Proxy does not support read replica instances for a Read Only proxy endpoint so it does not have same pooling and failover benefits.
+    - RDS Proxy Read Only Enpoints supports RDS DB clusters (more expensive, not used) and not RDS DB Instances (cheap, is used).
+  - IAM roles and policies for access to Secrets Manager mysql secrets.
 
 Security Groups:
-- Fine-grained rules for ALB ↔ EC2 ↔ RDS.
+- Fine-grained rules for ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.
 - Outbound rules configured for necessary security groups.
 
 Scaling Behavior:
