@@ -78,6 +78,6 @@ module "vpcs" {
 }
 
 locals {
-  vpc_names = { for this in module.vpcs : this.name => this.name }
+  vpc_names = { for this in local.vpcs : this.name => this.name }
 }
 

@@ -1,7 +1,5 @@
 locals {
-  url       = format("%s%s/", "https://", local.domain_name)
-  endpoint1 = format("%s%s", local.url, "app1")
-  endpoint2 = format("%s%s", local.url, "app2")
+  url = format("%s%s/", "https://", local.domain_name)
 }
 
 output "url" {
@@ -9,11 +7,11 @@ output "url" {
 }
 
 output "endpoint1" {
-  value = local.endpoint1
+  value = format("%s%s", local.url, "app1")
 }
 
 output "endpoint2" {
-  value = local.endpoint2
+  value = format("%s%s", local.url, "app2")
 }
 
 output "vpcs_natgw_eips_per_az" {
