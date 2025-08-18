@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "rds_proxy_secrets_read_only" {
       "secretsmanager:GetSecretValue",
       "secretsmanager:DescribeSecret",
     ]
-    resources = [format("%s*", aws_secretsmanager_secret.rds.arn)]
+    resources = [aws_secretsmanager_secret.rds.arn]
   }
 }
 
