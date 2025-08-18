@@ -10,6 +10,23 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+# RDS Proxy needs to read the secret value and (best practice) describe the secret.
+data "aws_iam_policy_document" "rds_proxy_secrets_read_only" {
+  statement {
+    sid = "AllowReadRDSSecrets"
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+    ]
+    resources = [format("%s*", aws_secretsmanager_secret.rds.arn)]
+  }
+}
+
+resource "aws_iam_policy" "rds_proxy_secrets_read_only" {
+  name   = format("%s-%s", var.env_prefix, "rds-proxy-secrets-readonly")
+  policy = data.aws_iam_policy_document.rds_proxy_secrets_read_only.json
+}
+
 resource "aws_iam_role" "rds_proxy" {
   name               = format("%s-%s", var.env_prefix, "rds-proxy-role")
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
@@ -18,7 +35,7 @@ resource "aws_iam_role" "rds_proxy" {
 # TODO: make policy for secrets manager read only
 resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
   role       = aws_iam_role.rds_proxy.name
-  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+  policy_arn = aws_iam_policy.rds_proxy_secrets_read_only.arn
 }
 
 # default target role READ_WRITE for the proxy endpoint
@@ -45,6 +62,7 @@ resource "aws_db_proxy" "rds_proxy" {
 
 resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
+
   connection_pool_config {
     max_connections_percent      = 75
     max_idle_connections_percent = 50
