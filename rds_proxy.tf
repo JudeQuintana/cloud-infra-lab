@@ -63,8 +63,8 @@ resource "aws_db_proxy" "rds_proxy" {
 resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 
-  #Steady web/ECS/EKS app – balanced reuse, moderate queueing
-  # session_pinning_filters can reduce session pinning from SET statements
+  # Steady web/ECS/EKS app – balanced reuse, moderate queueing
+  # `session_pinning_filters` can reduce session pinning from SET statements
   # and improve multiplexing—use only if safe for your app’s session semantics.
   # tune to your needs
   connection_pool_config {
@@ -101,7 +101,9 @@ locals {
   rds_connection_with_hosts = merge(
     local.rds_connection,
     {
-      host              = aws_db_proxy.rds_proxy.endpoint
+      host = aws_db_proxy.rds_proxy.endpoint
+      # RDS proxy doesnt support read only endpoints for DB instances (cheap), only RDS clusters (more expensive)
+      # therefore read replica instance access bypasses the RDS proxy
       read_replica_host = aws_db_instance.read_replica.address
     }
   )
