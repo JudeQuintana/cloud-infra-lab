@@ -42,7 +42,7 @@ locals {
         ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK (via RDS Proxy)"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary ERROR\n$ERROR_OUTPUT"
         fi
@@ -55,7 +55,7 @@ locals {
         ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
+          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK (bypassing RDS Proxy)"
         else
           printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR\n$ERROR_OUTPUT"
         fi
