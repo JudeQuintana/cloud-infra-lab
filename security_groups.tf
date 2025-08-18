@@ -88,7 +88,6 @@ resource "aws_security_group_rule" "instance_egress_443_to_s3_us_west_2" {
   protocol  = "tcp"
 }
 
-
 # need direct access for read replica bypassing RDS proxy
 # required for RDS Instances behind RDS proxy
 resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
@@ -100,7 +99,7 @@ resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
   protocol                 = "tcp"
 }
 
-# egress for msyql connections to rds proxy
+# egress for instance connections to rds proxy
 resource "aws_security_group_rule" "instance_egress_3306_to_rds_proxy_sg" {
   security_group_id        = aws_security_group.instance_sg.id
   source_security_group_id = aws_security_group.rds_proxy_sg.id

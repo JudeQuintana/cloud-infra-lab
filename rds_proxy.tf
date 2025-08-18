@@ -75,8 +75,6 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   }
 }
 
-# Need this wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
-# - InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
 resource "terraform_data" "wait_for_rds" {
   provisioner "local-exec" {
     command = format(
@@ -92,6 +90,8 @@ resource "aws_db_proxy_target" "writer" {
   target_group_name      = aws_db_proxy_default_target_group.rds_proxy_tg.name
   db_instance_identifier = aws_db_instance.mysql.identifier
 
+  # Need this to wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
+  # - InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
   depends_on = [
     terraform_data.wait_for_rds
   ]
