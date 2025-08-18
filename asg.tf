@@ -35,9 +35,6 @@ locals {
       - echo 'export MYSQL_DB_NAME="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.secretsmanager_mysql.timeout}"' >> /etc/profile.d/app_env.sh
 
-      - touch /var/log/app1_mysql_error.log /var/log/app2_mysql_error.log
-      - chmod 644 /var/log/app1_mysql_error.log /var/log/app2_mysql_error.log
-
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
