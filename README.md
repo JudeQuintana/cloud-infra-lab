@@ -134,9 +134,10 @@ Scaling Behavior:
 - Policies managed via CloudWatch alarms + ASG.
 
 VPC:
-- Uses Tiered VPC-NG module.
 - Requires IPAM.
-- VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+- Uses Tiered VPC-NG module.
+- Currenlty utilizing 2 AZs but more can be added.
+- Has a VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 - Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   - It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
   - example: [Centralized Egress Demo](https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo)
