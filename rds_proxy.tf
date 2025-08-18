@@ -1,5 +1,5 @@
 # rds proxy
-# IAM
+# IAM for accessing secrets and assume role
 data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -37,6 +37,7 @@ resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
   policy_arn = aws_iam_policy.rds_proxy_secrets_read_only.arn
 }
 
+## RDS Proxy
 # default target role READ_WRITE for the proxy endpoint
 resource "aws_db_proxy" "rds_proxy" {
   name                   = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
@@ -62,6 +63,8 @@ resource "aws_db_proxy" "rds_proxy" {
 resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 
+  # spesion_pinning_filteres can reduce session pinning from SET statements
+  # and improve multiplexing—use only if safe for your app’s session semantics.
   connection_pool_config {
     max_connections_percent      = 75
     max_idle_connections_percent = 50
@@ -71,7 +74,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
 }
 
 # Need this wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
-# InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
+# - InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
 resource "terraform_data" "wait_for_rds" {
   provisioner "local-exec" {
     command = format(
