@@ -89,7 +89,8 @@ resource "aws_security_group_rule" "instance_egress_443_to_s3_us_west_2" {
 }
 
 
-# need direct access for read replica
+# need direct access for read replica bypassing RDS proxy
+# required for RDS Instances behind RDS proxy
 resource "aws_security_group_rule" "instance_egress_to_mysql_sg" {
   security_group_id        = aws_security_group.instance_sg.id
   source_security_group_id = aws_security_group.mysql_sg.id
