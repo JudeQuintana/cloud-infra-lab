@@ -24,7 +24,7 @@ Beginner to intermediate level.
 Enjoy!
 
 ## Architecture
-![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-with-rds-replication.png)
+![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-rds-proxy.png)
 
 ## Prerequisites
 AWS:
