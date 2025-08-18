@@ -114,13 +114,14 @@ NGINX reverse proxy + Socat Health Checks:
 Amazon RDS (MySQL):
 - Primary DB Instance with Multi-AZ and encryption via KMS.
 - Read Replica DB Instance (Intra-region and Multi-AZ).
-- Access controlled by SGs (only from ASG instances).
+- Access controlled by SGs (only from ASG instances to RDS Proxy, and
+  ASG instances to RDS directly).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- RDS Proxy
+- RDS Proxy: acts like a smart middle layer between your app and RDS, helping with scalability, availability, and security without your app having to change how it queries the database.
   - IAM roles and policies for access to Secrets Manager MYSQL secrets.
   - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
   - Access to the read replica bypasses the RDS Proxy.
-    - RDS proxy doesnt support read only endpoints for DB instances (cheap), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy and doesn't have the db pooling and failover benefits.
+    - RDS proxy doesnt support read only endpoints for DB instances (cheap), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.
