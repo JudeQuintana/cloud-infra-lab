@@ -84,10 +84,3 @@ locals {
   )
 }
 
-output "rds_hosts" {
-  value = {
-    host              = aws_db_proxy.rds_proxy.endpoint
-    read_replica_host = aws_db_instance.read_replica.address
-  }
-}
-
