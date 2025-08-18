@@ -121,7 +121,7 @@ Amazon RDS (MySQL):
   - IAM roles and policies for access to Secrets Manager MYSQL secrets.
   - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
   - Access to the read replica bypasses the RDS Proxy.
-    - RDS proxy doesnt support read only endpoints for DB instances (cheap), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
+    - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.

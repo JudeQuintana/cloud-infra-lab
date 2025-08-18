@@ -1,4 +1,4 @@
-# IAM required for rds proxy accessing secrets and assume role
+### IAM required for rds proxy accessing secrets and assume role
 data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -41,7 +41,7 @@ resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
   policy_arn = aws_iam_policy.rds_proxy_secrets_read_only.arn
 }
 
-## RDS Proxy
+### RDS Proxy
 locals {
   rds_proxy_name = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
 }
@@ -107,7 +107,7 @@ resource "aws_db_proxy_target" "writer" {
 }
 
 locals {
-  # RDS proxy doesnt support read only endpoints for DB instances (cheap), only RDS clusters (more expensive)
+  # RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive)
   # therefore read replica instance access bypasses the RDS proxy
   rds_connection_with_hosts = merge(
     local.rds_connection,
