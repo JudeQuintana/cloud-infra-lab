@@ -49,6 +49,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
     max_connections_percent      = 75
     max_idle_connections_percent = 50
     connection_borrow_timeout    = 120
+    session_pinning_filters      = ["EXCLUDE_VARIABLE_SETS"] # MYSQL Engine specific
   }
 }
 
