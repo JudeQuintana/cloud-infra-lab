@@ -73,8 +73,8 @@ Health Check:
 - `https://cloud.some.domain/` -> `Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (or MySQL Primary Error)`
-- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (or MySQL Read Replica Error)`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy) or MySQL Primary Error`
+- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (bypassing RDS Proxy) or MySQL Read Replica Error`
 
 ## TODO
 - Add RDS proxy for primary and read replica DBs.
@@ -88,7 +88,7 @@ Modularize (OO style):
 
 ## Components
 Application Load Balancer (ALB):
-- HTTPS (TLS 1.2 & 1.3) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
+- HTTPS (TLS 1.2 & 1.3 termination) with ACM + ELBSecurityPolicy-TLS13-1-2-2021-06.
 - HTTP to HTTPS Redirects
 
 Auto Scaling Group (ASG):
@@ -115,10 +115,10 @@ NGINX reverse proxy + Socat Health Checks:
 - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
 
 Amazon RDS (MySQL):
-- Multi-AZ with encryption via custom KMS key.
+- Primary RDS DB Instance Multi-AZ with encryption via custom KMS key.
 - Access controlled by SGs (only from ASG instances).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- Intra-region encrypted Multi-AZ Read Replica.
+- Encrypted Intra-region Multi-AZ RDS DB Instance Read Replica.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
