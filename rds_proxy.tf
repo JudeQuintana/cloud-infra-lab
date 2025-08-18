@@ -76,8 +76,10 @@ resource "aws_db_proxy_target" "writer" {
 locals {
   rds_connection_with_hosts = merge(
     local.rds_connection,
-    { host = aws_db_proxy.rds_proxy.endpoint },
-    { read_replica_host = aws_db_instance.read_replica.address }
+    {
+      host              = aws_db_proxy.rds_proxy.endpoint
+      read_replica_host = aws_db_instance.read_replica.address
+    }
   )
 }
 
