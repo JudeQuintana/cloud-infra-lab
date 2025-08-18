@@ -1,5 +1,4 @@
-# rds proxy
-# IAM for accessing secrets and assume role
+# IAM required for rds proxy accessing secrets and assume role
 data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -38,7 +37,7 @@ resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
 }
 
 ## RDS Proxy
-# default target role READ_WRITE for the proxy endpoint
+# the default target role is READ_WRITE for the proxy endpoint
 resource "aws_db_proxy" "rds_proxy" {
   name                   = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
   engine_family          = "MYSQL"
@@ -55,20 +54,23 @@ resource "aws_db_proxy" "rds_proxy" {
     iam_auth    = "DISABLED"
   }
 
-  require_tls         = true
-  idle_client_timeout = 1800
+  require_tls = true
+  # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
+  idle_client_timeout = 900
   debug_logging       = false
 }
 
 resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
   db_proxy_name = aws_db_proxy.rds_proxy.name
 
-  # spesion_pinning_filteres can reduce session pinning from SET statements
+  #Steady web/ECS/EKS app – balanced reuse, moderate queueing
+  # session_pinning_filters can reduce session pinning from SET statements
   # and improve multiplexing—use only if safe for your app’s session semantics.
+  # tune to your needs
   connection_pool_config {
-    max_connections_percent      = 75
-    max_idle_connections_percent = 50
-    connection_borrow_timeout    = 120
+    max_connections_percent      = 85
+    max_idle_connections_percent = 40
+    connection_borrow_timeout    = 10
     session_pinning_filters      = ["EXCLUDE_VARIABLE_SETS"] # MYSQL Engine specific
   }
 }
