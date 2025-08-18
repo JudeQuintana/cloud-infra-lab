@@ -88,10 +88,10 @@ resource "aws_security_group_rule" "instance_egress_443_to_s3_us_west_2" {
   protocol  = "tcp"
 }
 
-# egress for msyql connections to rds
+# egress for msyql connections to rds proxy
 resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
   security_group_id        = aws_security_group.instance_sg.id
-  source_security_group_id = aws_security_group.mysql_sg.id
+  source_security_group_id = aws_security_group.rds_proxy_sg.id
   type                     = "egress"
   from_port                = 3306
   to_port                  = 3306

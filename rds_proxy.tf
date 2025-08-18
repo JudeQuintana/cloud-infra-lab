@@ -63,7 +63,7 @@ resource "terraform_data" "wait_for_rds" {
   }
 }
 
-resource "aws_db_proxy_target" "rds_writer" {
+resource "aws_db_proxy_target" "writer" {
   db_proxy_name          = aws_db_proxy.rds_proxy.name
   target_group_name      = aws_db_proxy_default_target_group.rds_proxy_tg.name
   db_instance_identifier = aws_db_instance.mysql.identifier
@@ -73,28 +73,18 @@ resource "aws_db_proxy_target" "rds_writer" {
   ]
 }
 
-resource "aws_db_proxy_target" "reader" {
-  db_proxy_name          = aws_db_proxy.rds_proxy.name
-  target_group_name      = aws_db_proxy_default_target_group.rds_proxy_tg.name
-  db_instance_identifier = aws_db_instance.read_replica.identifier
-}
-
-resource "aws_db_proxy_endpoint" "read_only" {
-  db_proxy_name          = aws_db_proxy.rds_proxy.name
-  db_proxy_endpoint_name = format("%s-%s", var.env_prefix, "mysql-rds-proxy-read-only")
-  target_role            = "READ_ONLY"
-  vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
-  vpc_subnet_ids = [
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
-  ]
-}
-
 locals {
   rds_connection_with_hosts = merge(
     local.rds_connection,
     { host = aws_db_proxy.rds_proxy.endpoint },
-    { read_replica_host = aws_db_proxy_endpoint.read_only.endpoint }
+    { read_replica_host = aws_db_instance.read_replica.address }
   )
+}
+
+output "rds_hosts" {
+  value = {
+    host              = aws_db_proxy.rds_proxy.endpoint
+    read_replica_host = aws_db_instance.read_replica.address
+  }
 }
 
