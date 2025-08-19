@@ -20,8 +20,8 @@ locals {
 resource "aws_db_subnet_group" "mysql" {
   name = local.db_subnet_group_name
   subnet_ids = [
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
+    lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db1"),
+    lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db2")
   ]
 
   tags = {
@@ -40,9 +40,10 @@ locals {
   # therefore keeping them separated into separate local vars
   rds_name                    = "app-mysql"
   rds_primary_name            = format(local.name_fmt, "primary", local.rds_name)
-  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name) # use rds_primary_name
+  rds_replica_name            = format(local.name_fmt, "replica", local.rds_name)
+  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)  # use rds_primary_name
+  rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica") # use rds_replica_name
   rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
-  rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica")
   rds_db_parameter_group_name = format(local.name_fmt, local.rds_identifier, "replication")
   rds_engine                  = "mysql"
   rds_engine_version          = "8.4.5"

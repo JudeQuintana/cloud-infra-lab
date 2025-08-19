@@ -73,14 +73,13 @@ Health Check:
 - `https://cloud.some.domain/` -> `NGINX Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy) or MySQL Primary Error`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary Error`
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (bypassing RDS Proxy) or MySQL Read Replica Error`
 
 Modularize (OO style):
 - `alb.tf`
 - `asg.tf`
 - `rds.tf`
-- `rds_proxy.tf`
 
 ## Components
 Application Load Balancer (ALB):

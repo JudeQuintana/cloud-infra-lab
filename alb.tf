@@ -47,8 +47,8 @@ resource "aws_lb" "alb" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets = [
-    lookup(lookup(module.vpcs, local.vpc_names.app).public_subnet_name_to_subnet_id, "lb1"),
-    lookup(lookup(module.vpcs, local.vpc_names.app).public_subnet_name_to_subnet_id, "lb2")
+    lookup(local.app_vpc.public_subnet_name_to_subnet_id, "lb1"),
+    lookup(local.app_vpc.public_subnet_name_to_subnet_id, "lb2")
   ]
 }
 
@@ -60,7 +60,7 @@ resource "aws_lb_target_group" "tg" {
   name     = local.alb_tg_name
   port     = 80
   protocol = "HTTP"
-  vpc_id   = lookup(module.vpcs, local.vpc_names.app).id
+  vpc_id   = local.app_vpc.id
 
   health_check {
     path                = "/"

@@ -28,7 +28,7 @@ variable "asg_instance_refresher" {
 }
 
 variable "rds_proxy" {
-  description = "Toggle for enabling RDS Proxy"
+  description = "Toggle for enabling RDS Proxy when needed"
   type        = bool
   default     = false
 }
