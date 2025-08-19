@@ -15,7 +15,7 @@ output "endpoint2" {
 }
 
 output "vpcs_natgw_eips_per_az" {
-  value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip }
+  value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip if length(this.public_natgw_az_to_eip) > 0 }
 }
 
 output "asg_instance_refresher_enabled" {
