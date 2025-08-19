@@ -12,11 +12,15 @@ variable "tags" {
 variable "rds_proxy" {
   description = "RDS Proxy configuration (RDS DB Instance and MYSQL specific)"
   type = object({
-    primary_db_instance_identifier = string
-    secretsmanager_secret_arn      = string
-    vpc_security_group_ids         = list(string)
-    vpc_subnet_ids                 = list(string)
-    require_tls                    = optional(bool, true)
+    primary_db_instance = object({
+      identifier = string
+    })
+    secretsmanager_secret = object({
+      arn = string
+    })
+    vpc_security_group_ids = list(string)
+    vpc_subnet_ids         = list(string)
+    require_tls            = optional(bool, true)
     # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
     idle_client_timeout = optional(number, 900)
     debug_logging       = optional(bool, false)

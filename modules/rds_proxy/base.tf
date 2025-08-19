@@ -50,7 +50,7 @@ resource "terraform_data" "this_wait_for_rds_availability" {
   provisioner "local-exec" {
     command = format(
       "aws rds wait db-instance-available --db-instance-identifier %s --region %s",
-      var.rds_proxy.primary_db_instance_identifier,
+      var.rds_proxy.primary_db_instance.identifier,
       local.region
     )
   }
@@ -59,7 +59,7 @@ resource "terraform_data" "this_wait_for_rds_availability" {
 resource "aws_db_proxy_target" "this_writer" {
   db_proxy_name          = aws_db_proxy.this.name
   target_group_name      = aws_db_proxy_default_target_group.this_default.name
-  db_instance_identifier = var.rds_proxy.primary_db_instance_identifier
+  db_instance_identifier = var.rds_proxy.primary_db_instance.identifier
 
   # Need this to wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
   # - InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
