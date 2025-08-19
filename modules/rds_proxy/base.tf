@@ -2,8 +2,7 @@
 data "aws_region" "this" {}
 
 locals {
-  region           = data.aws_region.this.name
-  upper_env_prefix = upper(var.env_prefix)
+  region = data.aws_region.this.name
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
