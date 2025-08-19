@@ -26,7 +26,7 @@ resource "aws_db_proxy" "this" {
 
   auth {
     auth_scheme = var.rds_proxy.auth_scheme
-    secret_arn  = var.rds_proxy.secretsmanager_secret_arn
+    secret_arn  = var.rds_proxy.secretsmanager_secret.arn
     iam_auth    = var.rds_proxy.iam_auth
   }
 
