@@ -45,7 +45,7 @@ locals {
         if [ $? -eq 0 ]; then
         printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK (via RDS Proxy: $MYSQL_RDS_PROXY)"
         else
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary (via RDS Proxy) ERROR:\n$ERROR_OUTPUT"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary (via RDS Proxy: $MYSQL_RDS_PROXY) ERROR:\n$ERROR_OUTPUT"
         fi
         EOF
 

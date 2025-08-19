@@ -39,7 +39,8 @@ locals {
   # cant put all rds info into an object due to some of the self referenital naming when using format in an object
   # therefore keeping them separated into separate local vars
   rds_name                    = "app-mysql"
-  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)
+  rds_primary_name            = format(local.name_fmt, "primary", local.rds_name)
+  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name) # use rds_primary_name
   rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
   rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica")
   rds_db_parameter_group_name = format(local.name_fmt, local.rds_identifier, "replication")
