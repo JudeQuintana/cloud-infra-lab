@@ -66,7 +66,7 @@ Tear Down:
 - Force delete the secrets manager path instead of waiting for scheduled deletion:
   - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
 - Delete snapshot that was created when destroying the DB.
-  - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-mysql-final-snapshot --region us-west-2`
+  - `aws rds delete-db-snapshot --db-snapshot-identifier test-primary-app-mysql-final-snapshot --region us-west-2`
 
 ## Endpoints
 Health Check:
