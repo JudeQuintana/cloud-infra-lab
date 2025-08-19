@@ -1,108 +1,22 @@
-### IAM required for rds proxy accessing secrets and assume role
-data "aws_iam_policy_document" "assume_role" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
-    }
-  }
+locals {
+  # use this style of map in a resource for_each when count = 1 behavior is needed
+  rds_proxy = { for this in [var.rds_proxy] : this => this if var.rds_proxy }
 }
 
-# RDS Proxy needs to read the secret value and (best practice) describe the secret.
-data "aws_iam_policy_document" "rds_proxy_secrets_read_only" {
-  statement {
-    sid = "AllowReadRDSSecrets"
-    actions = [
-      "secretsmanager:GetSecretValue",
-      "secretsmanager:DescribeSecret",
+module "rds_proxy" {
+  source = "./modules/rds_proxy"
+
+  for_each = local.rds_proxy
+
+  env_prefix = var.env_prefix
+  rds_proxy = {
+    primary_db_instance_identifier = aws_db_instance.primary.identifier
+    secretsmanager_secret_arn      = aws_secretsmanager_secret.rds.arn
+    vpc_security_group_ids         = [aws_security_group.rds_proxy_sg.id]
+    vpc_subnet_ids = [
+      lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
+      lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
     ]
-    resources = [aws_secretsmanager_secret.rds.arn]
   }
-}
-
-locals {
-  iam_policy_name = format("%s-%s", var.env_prefix, "rds-proxy-secrets-readonly")
-  iam_role_name   = format("%s-%s", var.env_prefix, "rds-proxy-role")
-}
-
-resource "aws_iam_policy" "rds_proxy_secrets_read_only" {
-  name   = local.iam_policy_name
-  policy = data.aws_iam_policy_document.rds_proxy_secrets_read_only.json
-}
-
-resource "aws_iam_role" "rds_proxy" {
-  name               = local.iam_role_name
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-}
-
-resource "aws_iam_role_policy_attachment" "rds_proxy_secrets_access" {
-  role       = aws_iam_role.rds_proxy.name
-  policy_arn = aws_iam_policy.rds_proxy_secrets_read_only.arn
-}
-
-### RDS Proxy
-locals {
-  rds_proxy_name = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
-}
-
-# the default target role is READ_WRITE for the proxy endpoint
-resource "aws_db_proxy" "rds_proxy" {
-  name                   = local.rds_proxy_name
-  engine_family          = "MYSQL"
-  role_arn               = aws_iam_role.rds_proxy.arn
-  vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
-  vpc_subnet_ids = [
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db1"],
-    lookup(module.vpcs, local.vpc_names.app).isolated_subnet_name_to_subnet_id["db2"]
-  ]
-
-  auth {
-    auth_scheme = "SECRETS"
-    secret_arn  = aws_secretsmanager_secret.rds.arn
-    iam_auth    = "DISABLED"
-  }
-
-  require_tls = true
-  # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
-  idle_client_timeout = 900
-  debug_logging       = false
-}
-
-resource "aws_db_proxy_default_target_group" "rds_proxy_tg" {
-  db_proxy_name = aws_db_proxy.rds_proxy.name
-
-  # Steady web/ECS/EKS app – balanced reuse, moderate queueing
-  # `session_pinning_filters` can reduce session pinning from SET statements
-  # and improve multiplexing—use only if safe for your app’s session semantics.
-  # tune to your needs
-  connection_pool_config {
-    max_connections_percent      = 85
-    max_idle_connections_percent = 40
-    connection_borrow_timeout    = 10
-    session_pinning_filters      = ["EXCLUDE_VARIABLE_SETS"] # MYSQL Engine specific
-  }
-}
-
-resource "terraform_data" "wait_for_rds" {
-  provisioner "local-exec" {
-    command = format(
-      "aws rds wait db-instance-available --db-instance-identifier %s --region %s",
-      aws_db_instance.mysql.identifier,
-      local.region
-    )
-  }
-}
-
-resource "aws_db_proxy_target" "writer" {
-  db_proxy_name          = aws_db_proxy.rds_proxy.name
-  target_group_name      = aws_db_proxy_default_target_group.rds_proxy_tg.name
-  db_instance_identifier = aws_db_instance.mysql.identifier
-
-  # Need this to wait until rds instance to have available hosts to bypass error on first apply, subsequent runs will be idempotent
-  # - InvalidDBInstanceState: DB Instance 'test-app-mysql' is in unsupported state - instance does not have any host
-  depends_on = [
-    terraform_data.wait_for_rds
-  ]
 }
 

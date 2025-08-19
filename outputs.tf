@@ -18,3 +18,7 @@ output "vpcs_natgw_eips_per_az" {
   value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip }
 }
 
+output "rds_proxy_enabled" {
+  value = var.rds_proxy
+}
+
