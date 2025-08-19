@@ -41,8 +41,8 @@ locals {
   rds_name                    = "app-mysql"
   rds_primary_name            = format(local.name_fmt, "primary", local.rds_name)
   rds_replica_name            = format(local.name_fmt, "replica", local.rds_name)
-  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_name)  # use rds_primary_name
-  rds_replica_identifier      = format(local.name_fmt, local.rds_identifier, "replica") # use rds_replica_name
+  rds_identifier              = format(local.name_fmt, var.env_prefix, local.rds_primary_name)
+  rds_replica_identifier      = format(local.name_fmt, var.env_prefix, local.rds_replica_name)
   rds_final_snapshot_name     = format(local.name_fmt, local.rds_identifier, "final-snapshot")
   rds_db_parameter_group_name = format(local.name_fmt, local.rds_identifier, "replication")
   rds_engine                  = "mysql"

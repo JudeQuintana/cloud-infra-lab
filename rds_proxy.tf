@@ -14,8 +14,8 @@ module "rds_proxy" {
     secretsmanager_secret_arn      = aws_secretsmanager_secret.rds.arn
     vpc_security_group_ids         = [aws_security_group.rds_proxy_sg.id]
     vpc_subnet_ids = [
-      local.app_vpc.isolated_subnet_name_to_subnet_id["db1"],
-      local.app_vpc.isolated_subnet_name_to_subnet_id["db2"]
+      lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db1"),
+      lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db2")
     ]
   }
 }

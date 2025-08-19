@@ -42,4 +42,3 @@ resource "aws_iam_role_policy_attachment" "this_secrets_access" {
   policy_arn = aws_iam_policy.this_secrets_read_only.arn
 }
 
-
