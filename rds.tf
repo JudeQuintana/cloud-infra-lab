@@ -128,7 +128,7 @@ resource "aws_db_instance" "read_replica" {
 }
 
 locals {
-  rds_proxy_endpoint_or_db_instance_address = var.rds_proxy ? module.rds_proxy.default_endpoint : aws_db_instance.primary.address
+  rds_proxy_endpoint_or_db_instance_address = var.rds_proxy ? lookup(module.rds_proxy, var.rds_proxy).default_endpoint : aws_db_instance.primary.address
   # RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive)
   # therefore read replica instance access bypasses the RDS proxy
   rds_connection_with_hosts = merge(
