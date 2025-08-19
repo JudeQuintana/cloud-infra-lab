@@ -2,8 +2,7 @@
 data "aws_region" "this" {}
 
 locals {
-  region = data.aws_region.this.name
-  #region_label     = lookup(var.region_az_labels, local.region)
+  region           = data.aws_region.this.name
   upper_env_prefix = upper(var.env_prefix)
   default_tags = merge({
     Environment = var.env_prefix
@@ -31,8 +30,7 @@ resource "aws_db_proxy" "this" {
     iam_auth    = var.rds_proxy.iam_auth
   }
 
-  require_tls = var.rds_proxy.require_tls
-  # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
+  require_tls         = var.rds_proxy.require_tls
   idle_client_timeout = var.rds_proxy.idle_client_timeout
   debug_logging       = var.rds_proxy.debug_logging
 }

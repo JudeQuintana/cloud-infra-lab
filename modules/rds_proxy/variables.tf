@@ -9,11 +9,6 @@ variable "tags" {
   default     = {}
 }
 
-#variable "region_az_labels" {
-#description = "Region and AZ names mapped to short naming conventions for labeling"
-#type        = map(string)
-#}
-
 variable "rds_proxy" {
   description = "RDS Proxy configuration (RDS DB Instance and MYSQL specific)"
   type = object({
@@ -40,3 +35,4 @@ variable "rds_proxy" {
     }), {})
   })
 }
+
