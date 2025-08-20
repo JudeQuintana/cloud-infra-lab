@@ -11,7 +11,7 @@ locals {
 
 ### RDS Proxy
 locals {
-  rds_proxy_name = format("%s-%s", var.env_prefix, "mysql-rds-proxy")
+  rds_proxy_name = format("%s-%s-%s", var.env_prefix, var.rds_proxy.name, "mysql-rds-proxy")
 }
 
 # the default target role is READ_WRITE for the proxy endpoint
@@ -21,7 +21,7 @@ resource "aws_db_proxy" "this" {
   role_arn               = aws_iam_role.this.arn
   vpc_security_group_ids = var.rds_proxy.vpc_security_group_ids
   vpc_subnet_ids         = var.rds_proxy.vpc_subnet_ids
-  tags                   = local.default_tags # merge name?
+  tags                   = local.default_tags
 
   auth {
     auth_scheme = var.rds_proxy.auth_scheme

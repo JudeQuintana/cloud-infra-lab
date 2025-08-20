@@ -12,6 +12,7 @@ variable "tags" {
 variable "rds_proxy" {
   description = "RDS Proxy configuration (RDS DB Instance and MYSQL specific)"
   type = object({
+    name = string
     primary_db_instance = object({
       identifier = string
     })

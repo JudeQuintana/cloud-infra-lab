@@ -10,6 +10,7 @@ module "rds_proxy" {
 
   env_prefix = var.env_prefix
   rds_proxy = {
+    name                   = "app"
     primary_db_instance    = aws_db_instance.primary
     secretsmanager_secret  = aws_secretsmanager_secret.rds
     vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
