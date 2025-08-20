@@ -25,9 +25,6 @@ variable "rds_proxy" {
     # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
     idle_client_timeout = optional(number, 900)
     debug_logging       = optional(bool, false)
-    engine_family       = optional(string, "MYSQL")
-    auth_scheme         = optional(string, "SECRETS")
-    iam_auth            = optional(string, "DISABLED")
     default_target_group_connection_pool_config = optional(object({
       # Steady web/ECS/EKS app – balanced reuse, moderate queueing
       # `session_pinning_filters` can reduce session pinning from SET statements
