@@ -153,7 +153,7 @@ resource "aws_autoscaling_group" "web_asg" {
     lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy1"),
     lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy2")
   ]
-  target_group_arns         = [aws_lb_target_group.tg.arn]
+  target_group_arns         = [module.alb.target_group_arn]
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
