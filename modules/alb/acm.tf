@@ -11,7 +11,6 @@ locals {
 resource "aws_route53_record" "this_cert_validation" {
   for_each = local.cert_validation_options
 
-  #zone_id = data.aws_route53_zone.zone.zone_id
   zone_id = var.alb.zone.zone_id
   name    = each.value.resource_record_name
   type    = each.value.resource_record_type

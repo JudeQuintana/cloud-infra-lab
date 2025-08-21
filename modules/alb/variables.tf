@@ -18,9 +18,6 @@ variable "alb" {
     })
     domain_name        = string
     security_group_ids = list(string)
-    # combine these two somehow
-    #vpc_subnet_ids     = list(string)
-    #vpc_id             = string
     vpc_with_selected_subnet_ids = object({
       vpc = object({
         id = string
