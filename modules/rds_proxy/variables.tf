@@ -10,7 +10,7 @@ variable "tags" {
 }
 
 variable "rds_proxy" {
-  description = "RDS Proxy configuration (RDS DB Instance and MYSQL specific)"
+  description = "RDS Proxy configuration (RDS DB Instance and MYSQL specific for Cloud Infra Lab)"
   type = object({
     name = string
     primary_db_instance = object({
