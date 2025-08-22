@@ -16,7 +16,7 @@ module "alb" {
     zone               = data.aws_route53_zone.zone
     domain_name        = local.domain_name
     security_group_ids = [aws_security_group.alb_sg.id]
-    vpc_with_selected_subnet_ids = {
+    vpc_with_subnet_ids = {
       vpc = local.app_vpc
       subnet_ids = [
         lookup(local.app_vpc.public_subnet_name_to_subnet_id, "lb1"),

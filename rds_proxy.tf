@@ -10,11 +10,11 @@ module "rds_proxy" {
 
   env_prefix = var.env_prefix
   rds_proxy = {
-    name                   = "app"
-    primary_db_instance    = aws_db_instance.primary
-    secretsmanager_secret  = aws_secretsmanager_secret.rds
-    vpc_security_group_ids = [aws_security_group.rds_proxy_sg.id]
-    vpc_subnet_ids = [
+    name                  = "app"
+    primary_db_instance   = aws_db_instance.primary
+    secretsmanager_secret = aws_secretsmanager_secret.rds
+    security_group_ids    = [aws_security_group.rds_proxy_sg.id]
+    subnet_ids = [
       lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db1"),
       lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db2")
     ]
