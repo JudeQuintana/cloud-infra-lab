@@ -1,7 +1,4 @@
-data "aws_region" "this" {}
-
 locals {
-  region = data.aws_region.this.name
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
@@ -13,7 +10,7 @@ resource "aws_lb" "this" {
   name               = local.alb_name
   load_balancer_type = "application"
   security_groups    = var.alb.security_group_ids
-  subnets            = var.alb.vpc_with_selected_subnet_ids.subnet_ids
+  subnets            = var.alb.vpc_with_subnet_ids.subnet_ids
   tags               = local.default_tags
 }
 
