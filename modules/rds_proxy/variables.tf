@@ -19,9 +19,9 @@ variable "rds_proxy" {
     secretsmanager_secret = object({
       arn = string
     })
-    vpc_security_group_ids = list(string)
-    vpc_subnet_ids         = list(string)
-    require_tls            = optional(bool, true)
+    security_group_ids = list(string)
+    subnet_ids         = list(string)
+    require_tls        = optional(bool, true)
     # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
     idle_client_timeout = optional(number, 900)
     debug_logging       = optional(bool, false)

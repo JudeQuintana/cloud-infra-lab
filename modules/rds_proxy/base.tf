@@ -18,8 +18,8 @@ resource "aws_db_proxy" "this" {
   name                   = local.rds_proxy_name
   engine_family          = "MYSQL"
   role_arn               = aws_iam_role.this.arn
-  vpc_security_group_ids = var.rds_proxy.vpc_security_group_ids
-  vpc_subnet_ids         = var.rds_proxy.vpc_subnet_ids
+  vpc_security_group_ids = var.rds_proxy.security_group_ids
+  vpc_subnet_ids         = var.rds_proxy.subnet_ids
   tags                   = local.default_tags
 
   auth {
