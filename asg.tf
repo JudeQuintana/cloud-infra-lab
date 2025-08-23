@@ -118,17 +118,23 @@ locals {
   )
 }
 
+# It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
+# will launch with initial desired_capacity value but any updates will be ignored so that the sale in and scale out alarms takeover
+# uncomment lifecyle ignore changes for desired_capacity in the asg resource in the asg module.
 module "asg" {
   source = "./modules/asg"
 
   env_prefix = var.env_prefix
   asg = {
     name               = "web"
+    alb                = module.alb
     ami                = data.aws_ami.al2023
     user_data          = local.cloud_init
     security_group_ids = [aws_security_group.instance_sg.id]
     instance_refresh   = var.asg_instance_refresher
-    alb                = module.alb
+    min_size           = 2
+    max_size           = 8
+    desired_capacity   = 2
     subnet_ids = [
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy1"),
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy2")

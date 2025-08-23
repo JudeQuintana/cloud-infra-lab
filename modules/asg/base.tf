@@ -6,8 +6,7 @@ locals {
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
-  name_fmt = "%s-%s"
-
+  name_fmt                     = "%s-%s"
   name                         = format(local.name_fmt, var.env_prefix, var.asg.name)
   launch_template_name_prefix  = format("%s-", local.name)
   web_lt_and_asg_instance_name = format(local.name_fmt, local.name, "instance")
@@ -38,13 +37,13 @@ locals {
 
 resource "aws_autoscaling_group" "this" {
   name                      = local.web_asg_name
-  min_size                  = 2
-  max_size                  = 8
-  desired_capacity          = 2
+  min_size                  = var.asg.min_size
+  max_size                  = var.asg.max_size
+  desired_capacity          = var.asg.desired_capacity
   vpc_zone_identifier       = var.asg.subnet_ids
   target_group_arns         = [var.asg.alb.target_group_arn]
   health_check_type         = "EC2"
-  health_check_grace_period = 300
+  health_check_grace_period = var.asg.health_check_grace_period
 
   launch_template {
     id = aws_launch_template.this.id
@@ -52,12 +51,9 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
 
-  # This tells the asg to keep 100% of your desired capacity healthy before it starts terminating old instances,
-  # and allows it to exceed capacity by up to 50% during replacements.
-  # This coincides with terraform_data.asg_instance_refresher to get 'launch before terminate' behavior.
   instance_maintenance_policy {
-    min_healthy_percentage = 100
-    max_healthy_percentage = 150
+    min_healthy_percentage = var.asg.instance_maintenance_policy.min_healthy_percentage
+    max_healthy_percentage = var.asg.instance_maintenance_policy.max_healthy_percentage
   }
 
   tag {
