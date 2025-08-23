@@ -2,28 +2,13 @@ locals {
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
-  name_fmt                = "%s-%s"
-  name                    = format(local.name_fmt, var.env_prefix, var.rds.name)
-  primary_identifier      = format(local.name_fmt, local.name, "primary")
-  read_replica_identifier = format(local.name_fmt, local.name, "replica")
-  final_snapshot_name     = format(local.name_fmt, local.name, "final-snapshot")
-  storage_encrypted       = true
-  multi_az                = true
-}
-
-resource "aws_db_subnet_group" "this" {
-  name       = local.name
-  subnet_ids = var.rds.subnet_ids
-
-  tags = merge(
-    local.default_tags,
-    {
-      Name = local.name
-    }
-  )
-}
-
-locals {
+  name_fmt                    = "%s-%s"
+  name                        = format(local.name_fmt, var.env_prefix, var.rds.name)
+  primary_identifier          = format(local.name_fmt, local.name, "primary")
+  read_replica_identifier     = format(local.name_fmt, local.name, "replica")
+  final_snapshot_name         = format(local.name_fmt, local.name, "final-snapshot")
+  storage_encrypted           = true
+  multi_az                    = true
   parameter_name_to_parameter = { for this in var.rds.db_parameters : this.name => this }
 }
 
@@ -40,6 +25,18 @@ resource "aws_db_parameter_group" "this" {
       value        = parameter.value.value
     }
   }
+
+  tags = merge(
+    local.default_tags,
+    {
+      Name = local.name
+    }
+  )
+}
+
+resource "aws_db_subnet_group" "this" {
+  name       = local.name
+  subnet_ids = var.rds.subnet_ids
 
   tags = merge(
     local.default_tags,
