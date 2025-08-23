@@ -1,10 +1,3 @@
-
-#rds_engine                  = "mysql"
-#rds_engine_version          = "8.4.5"
-#rds_family                  = "mysql8.4"
-#rds_instance_class          = "db.t3.micro"
-
-
 variable "env_prefix" {
   description = "prod, stage, test"
   type        = string

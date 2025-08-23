@@ -1,4 +1,7 @@
 locals {
+  default_tags = merge({
+    Environment = var.env_prefix
+  }, var.tags)
   name_fmt                = "%s-%s"
   name                    = format(local.name_fmt, var.env_prefix, var.rds.name)
   primary_identifier      = format(local.name_fmt, local.name, "primary")
@@ -6,19 +9,18 @@ locals {
   final_snapshot_name     = format(local.name_fmt, local.name, "final-snapshot")
   storage_encrypted       = true
   multi_az                = true
-  #rds_identifier          = format(local.name_fmt, var.env_prefix, local.rds_primary_name)
-  #rds_replica_identifier  = format(local.name_fmt, var.env_prefix, local.rds_replica_name)
-  #db_subnet_group_name    = format(local.name_fmt, local.name, "subnet-group")
-  #db_parameter_group_name = format(local.name_fmt, local.name, "db-paramater-group")
 }
 
 resource "aws_db_subnet_group" "this" {
   name       = local.name
   subnet_ids = var.rds.subnet_ids
 
-  tags = {
-    Name = local.name
-  }
+  tags = merge(
+    local.default_tags,
+    {
+      Name = local.name
+    }
+  )
 }
 
 locals {
@@ -39,9 +41,12 @@ resource "aws_db_parameter_group" "this" {
     }
   }
 
-  tags = {
-    Name = local.name
-  }
+  tags = merge(
+    local.default_tags,
+    {
+      Name = local.name
+    }
+  )
 }
 
 resource "aws_db_instance" "this_primary" {
@@ -66,9 +71,12 @@ resource "aws_db_instance" "this_primary" {
   password                  = var.rds.connection.password
   port                      = var.rds.connection.port
 
-  tags = {
-    Name = local.primary_identifier
-  }
+  tags = merge(
+    local.default_tags,
+    {
+      Name = local.primary_identifier
+    }
+  )
 }
 
 resource "aws_db_instance" "this_read_replica" {
@@ -81,8 +89,11 @@ resource "aws_db_instance" "this_read_replica" {
   storage_encrypted      = local.storage_encrypted
   skip_final_snapshot    = true # required for read replica
 
-  tags = {
-    Name = local.read_replica_identifier
-  }
+  tags = merge(
+    local.default_tags,
+    {
+      Name = local.read_replica_identifier
+    }
+  )
 }
 
