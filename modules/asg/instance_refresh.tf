@@ -3,7 +3,7 @@ locals {
 }
 
 ### try changing this to inline on the asg instead of CLI, compare behavior
-resource "terraform_data" "this_instance_refresher" {
+resource "terraform_data" "this_instance_refresh" {
   for_each = local.instance_refresh
 
   # trigger on launch template user_data or image_id changes

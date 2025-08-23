@@ -34,7 +34,7 @@ locals {
       - echo 'export MYSQL_PASSWORD="${local.secretsmanager_mysql.password}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_DB_NAME="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.secretsmanager_mysql.timeout}"' >> /etc/profile.d/app_env.sh
-      - echo 'export MYSQL_RDS_PROXY="${var.rds_proxy}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_RDS_PROXY="${var.enable_rds_proxy}"' >> /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
@@ -127,14 +127,14 @@ module "asg" {
   env_prefix = var.env_prefix
   asg = {
     name               = "web"
-    alb                = module.alb
-    ami                = data.aws_ami.al2023
-    user_data          = local.cloud_init
-    security_group_ids = [aws_security_group.instance_sg.id]
-    instance_refresh   = var.asg_instance_refresher
     min_size           = 2
     max_size           = 8
     desired_capacity   = 2
+    instance_refresh   = var.enable_asg_instance_refresh
+    ami                = data.aws_ami.al2023
+    user_data          = local.cloud_init
+    alb                = module.alb
+    security_group_ids = [aws_security_group.instance_sg.id]
     subnet_ids = [
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy1"),
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy2")
