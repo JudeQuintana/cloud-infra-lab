@@ -18,11 +18,11 @@ output "vpcs_natgw_eips_per_az" {
   value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip if length(this.public_natgw_az_to_eip) > 0 }
 }
 
-output "asg_instance_refresher_enabled" {
-  value = var.asg_instance_refresher
+output "is_asg_instance_refresh_enabled" {
+  value = var.enable_asg_instance_refresh
 }
 
-output "rds_proxy_enabled" {
-  value = var.rds_proxy
+output "is_rds_proxy_enabled" {
+  value = var.enable_rds_proxy
 }
 

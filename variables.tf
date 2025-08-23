@@ -21,15 +21,15 @@ variable "zone_name" {
   default     = "jq1.io"
 }
 
-variable "asg_instance_refresher" {
+variable "enable_asg_instance_refresh" {
   description = "Start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template user_data or image_id has been modified."
   type        = bool
   default     = true
 }
 
-variable "rds_proxy" {
+variable "enable_rds_proxy" {
   description = "Toggle for enabling RDS Proxy when needed"
   type        = bool
-  default     = true
+  default     = false
 }
 
