@@ -30,13 +30,13 @@ module "rds" {
 }
 
 locals {
-  rds_proxy_endpoint_or_db_instance_address = var.enable_rds_proxy ? lookup(module.rds_proxy, var.enable_rds_proxy).default_endpoint : module.rds.primary_address
+  rds_proxy_endpoint_or_primary_db_instance_address = var.enable_rds_proxy ? lookup(module.rds_proxy, var.enable_rds_proxy).default_endpoint : module.rds.primary_address
   # RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive)
   # therefore read replica instance access bypasses the RDS proxy
   rds_connection_with_hosts = merge(
     local.rds_connection,
     {
-      host              = local.rds_proxy_endpoint_or_db_instance_address
+      host              = local.rds_proxy_endpoint_or_primary_db_instance_address
       read_replica_host = module.rds.read_replica_address
     }
   )
