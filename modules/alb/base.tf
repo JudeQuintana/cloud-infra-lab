@@ -2,8 +2,9 @@ locals {
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
-
-  alb_name = format("%s-%s-%s", var.env_prefix, var.alb.name, "alb")
+  name_fmt = "%s-%s"
+  name     = format(local.name_fmt, var.env_prefix, var.alb.name)
+  alb_name = format(local.name_fmt, local.name, "alb")
 }
 
 resource "aws_lb" "this" {
