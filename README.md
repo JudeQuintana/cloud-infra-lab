@@ -96,11 +96,12 @@ Auto Scaling Group (ASG):
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
   - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-- Boolean to auto deploy instance refresh using latest launch template version after the launch template user_data or image_id is modified.
+- Boolean to auto deploy instance refresh using latest launch template version after the launch template is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
-  - Only one instance refresh can be run at a time or it will error.
+  - Only one instance refresh can be run at a time but will cancel any
+    in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`.
-  - Current demo configuration will take up to 10min for a refresh to finish or manually cancel.
+  - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh.
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
