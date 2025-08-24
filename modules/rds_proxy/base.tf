@@ -6,16 +6,17 @@ locals {
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
+  name_fmt = "%s-%s"
 }
 
 locals {
-  rds_proxy_name = format("%s-%s-%s", var.env_prefix, var.rds_proxy.name, "mysql-rds-proxy")
+  rds_proxy_name = format(local.name_fmt, var.env_prefix, var.rds_proxy.name)
 }
 
 # the default target role is READ_WRITE for the proxy endpoint
 resource "aws_db_proxy" "this" {
   name                   = local.rds_proxy_name
-  engine_family          = "MYSQL"
+  engine_family          = var.rds_proxy.rds.engine_family
   role_arn               = aws_iam_role.this.arn
   vpc_security_group_ids = var.rds_proxy.security_group_ids
   vpc_subnet_ids         = var.rds_proxy.subnet_ids
