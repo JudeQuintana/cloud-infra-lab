@@ -58,7 +58,7 @@ Build:
 
 Tear Down:
 - Remove RDS deletion protection:
-  - `aws rds modify-db-instance --db-instance-identifier test-app-mysql --no-deletion-protection --apply-immediately --region us-west-2`
+  - `aws rds modify-db-instance --db-instance-identifier test-app-primary --no-deletion-protection --apply-immediately --region us-west-2`
 - Destroy resources:
   - `terraform destroy`
   - note: vpcs will take 10-15min to destroy due to IPAM taking a long
