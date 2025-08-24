@@ -66,20 +66,15 @@ Tear Down:
 - Force delete the secrets manager path instead of waiting for scheduled deletion:
   - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
 - Delete snapshot that was created when destroying the DB.
-  - `aws rds delete-db-snapshot --db-snapshot-identifier test-primary-app-mysql-final-snapshot --region us-west-2`
+  - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-primary-final-snapshot --region us-west-2`
 
 ## Endpoints
 Health Check:
 - `https://cloud.some.domain/` -> `NGINX Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary Error`
-- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (bypassing RDS Proxy) or MySQL Read Replica Error`
-
-Modularize (OO style):
-- `alb.tf`
-- `asg.tf`
-- `rds.tf`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary ERROR`
+- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (bypassing RDS Proxy) or MySQL Read Replica ERROR`
 
 ## Components
 Application Load Balancer (ALB):

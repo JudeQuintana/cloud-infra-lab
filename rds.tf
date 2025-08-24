@@ -14,7 +14,7 @@ locals {
   }
 }
 
-# MYSQL RDS primary and read replica DB instances
+# Multi-AZ MYSQL RDS primary and read replica DB instances by default
 module "rds" {
   source = "./modules/rds"
 
