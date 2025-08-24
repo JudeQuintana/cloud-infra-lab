@@ -13,6 +13,7 @@ locals {
     timeout  = 3
   }
 }
+
 # MYSQL RDS primary and read replica DB instances
 module "rds" {
   source = "./modules/rds"
@@ -36,7 +37,7 @@ locals {
   rds_connection_with_hosts = merge(
     local.rds_connection,
     {
-      host              = local.rds_proxy_endpoint_or_primary_db_instance_address
+      primary_host      = local.rds_proxy_endpoint_or_primary_db_instance_address
       read_replica_host = module.rds.read_replica_address
     }
   )

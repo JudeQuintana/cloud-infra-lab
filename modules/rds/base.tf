@@ -5,8 +5,8 @@ locals {
   name_fmt                    = "%s-%s"
   name                        = format(local.name_fmt, var.env_prefix, var.rds.name)
   primary_identifier          = format(local.name_fmt, local.name, "primary")
+  final_snapshot_name         = format(local.name_fmt, local.primary_identifier, "final-snapshot")
   read_replica_identifier     = format(local.name_fmt, local.name, "replica")
-  final_snapshot_name         = format(local.name_fmt, local.name, "final-snapshot")
   storage_encrypted           = true
   multi_az                    = true
   parameter_name_to_parameter = { for this in var.rds.db_parameters : this.name => this }

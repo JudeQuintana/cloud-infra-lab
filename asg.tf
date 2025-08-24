@@ -27,7 +27,7 @@ locals {
       - socat
 
     runcmd:
-      - echo 'export MYSQL_HOST="${local.secretsmanager_mysql.host}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_HOST="${local.secretsmanager_mysql.primary_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_READ_REPLICA_HOST="${local.secretsmanager_mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PORT="${local.secretsmanager_mysql.port}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_USERNAME="${local.secretsmanager_mysql.username}"' >> /etc/profile.d/app_env.sh
