@@ -3,6 +3,7 @@ locals {
   rds_proxy = { for this in [var.enable_rds_proxy] : this => this if var.enable_rds_proxy }
 }
 
+# RDS Proxy is MYSQL for DB insteance by default
 module "rds_proxy" {
   source = "./modules/rds_proxy"
 
