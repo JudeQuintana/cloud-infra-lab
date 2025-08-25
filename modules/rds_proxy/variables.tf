@@ -29,13 +29,11 @@ variable "rds_proxy" {
     debug_logging       = optional(bool, false)
     default_target_group_connection_pool_config = optional(object({
       # Steady web/ECS/EKS app – balanced reuse, moderate queueing
-      # `session_pinning_filters` can reduce session pinning from SET statements
-      # and improve multiplexing—use only if safe for your app’s session semantics.
       # tune to your needs
       max_connections_percent      = optional(number, 85)
       max_idle_connections_percent = optional(number, 40)
       connection_borrow_timeout    = optional(number, 10)
-      session_pinning_filters      = optional(list(string), ["EXCLUDE_VARIABLE_SETS"]) # MYSQL Engine specific
+      session_pinning_filters      = optional(list(string))
     }), {})
   })
 }
