@@ -6,7 +6,7 @@ Could probably use more variable validation
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.4 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=5.61 |
 
 ## Providers
@@ -42,7 +42,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_engine_family"></a> [engine\_family](#output\_engine\_family) | not same as family for db\_parameter group for use with rds\_proxy default will be "MYSQL" |
+| <a name="output_engine_family"></a> [engine\_family](#output\_engine\_family) | n/a |
 | <a name="output_primary_address"></a> [primary\_address](#output\_primary\_address) | n/a |
 | <a name="output_primary_identifier"></a> [primary\_identifier](#output\_primary\_identifier) | n/a |
 | <a name="output_read_replica_address"></a> [read\_replica\_address](#output\_read\_replica\_address) | n/a |
