@@ -22,7 +22,8 @@ variable "asg" {
     alb = object({
       target_group_arn = string
     })
-    instance_refresh = bool
+    # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
+    instance_refresh = optional(bool, true)
     min_size         = number
     max_size         = number
     # will launch with initial desired_capacity value

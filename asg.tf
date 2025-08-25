@@ -130,7 +130,6 @@ module "asg" {
     min_size           = 2
     max_size           = 8
     desired_capacity   = 2
-    instance_refresh   = var.enable_asg_instance_refresh
     ami                = data.aws_ami.al2023
     user_data          = local.cloud_init
     alb                = module.alb

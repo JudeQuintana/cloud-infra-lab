@@ -4,11 +4,10 @@ locals {
   }, var.tags)
   name_fmt = "%s-%s"
   name     = format(local.name_fmt, var.env_prefix, var.alb.name)
-  alb_name = format(local.name_fmt, local.name, "alb")
 }
 
 resource "aws_lb" "this" {
-  name               = local.alb_name
+  name               = local.name
   load_balancer_type = "application"
   security_groups    = var.alb.security_group_ids
   subnets            = var.alb.vpc_with_subnet_ids.subnet_ids

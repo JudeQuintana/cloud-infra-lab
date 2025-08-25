@@ -5,7 +5,6 @@ locals {
   name_fmt                     = "%s-%s"
   name                         = format(local.name_fmt, var.env_prefix, var.asg.name)
   launch_template_name_prefix  = format("%s-", local.name)
-  web_asg_name                 = format(local.name_fmt, local.name, "asg")
   web_lt_and_asg_instance_name = format(local.name_fmt, local.name, "instance")
   instance_refresh             = { for this in [var.asg.instance_refresh] : this => this if var.asg.instance_refresh }
 }
@@ -30,7 +29,7 @@ resource "aws_launch_template" "this" {
 }
 
 resource "aws_autoscaling_group" "this" {
-  name                      = local.web_asg_name
+  name                      = local.name
   min_size                  = var.asg.min_size
   max_size                  = var.asg.max_size
   desired_capacity          = var.asg.desired_capacity

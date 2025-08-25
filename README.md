@@ -112,11 +112,18 @@ Amazon RDS (MySQL):
 - Access controlled by SGs (only from ASG instances to RDS Proxy, and
   ASG instances to RDS directly).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
-- RDS Proxy: acts like a smart middle layer between your app and RDS, helping with scalability, availability, and security without your app having to change how it queries the database.
-  - IAM roles and policies for access to Secrets Manager MYSQL secrets.
-  - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
-  - Access to the read replica bypasses the RDS Proxy.
-    - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
+- RDS Proxy: is for scaling connections and managing failover smoother.
+  - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
+    - That means the proxy can actually cost as much as, or more than, the tiny database itself.
+  - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
+    It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
+  - The RDS proxy can be toggled via `var.enable_rds_proxy` ([variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
+    - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
+  - Module Implemention:
+    - IAM roles and policies for access to Secrets Manager MYSQL secrets.
+    - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
+    - Access to the read replica bypasses the RDS Proxy.
+      - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.
