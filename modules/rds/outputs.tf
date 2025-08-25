@@ -13,5 +13,5 @@ output "read_replica_address" {
 # not same as family for db_parameter group
 # for use with rds_proxy default will be "MYSQL"
 output "engine_family" {
-  value = contains(["mysql"], var.rds.engine) ? upper(var.rds.engine) : null
+  value = strcontains(var.rds.engine, "mysql") ? upper(var.rds.engine) : null
 }
