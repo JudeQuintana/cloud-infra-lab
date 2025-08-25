@@ -19,13 +19,13 @@ variable "rds" {
       password = string
       port     = optional(number, 3306)
     })
-    security_group_ids  = list(string)
-    subnet_ids          = list(string)
-    engine              = optional(string, "mysql")
-    engine_version      = optional(string, "8.4.5")
-    family              = optional(string, "mysql8.4")
-    instance_class      = optional(string, "db.t3.micro")
-    deletion_protection = optional(bool, true)
+    security_group_ids        = list(string)
+    subnet_ids                = list(string)
+    engine                    = optional(string, "mysql")
+    engine_version            = optional(string, "8.4.5")
+    db_parameter_group_family = optional(string, "mysql8.4")
+    instance_class            = optional(string, "db.t3.micro")
+    deletion_protection       = optional(bool, true)
     # required greater than 0 if read replica exists
     # add to variable validation must be more than 0
     backup_retention_period = optional(number, 7)

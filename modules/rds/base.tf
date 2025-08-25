@@ -14,7 +14,7 @@ locals {
 
 resource "aws_db_parameter_group" "this" {
   name   = local.name
-  family = var.rds.family
+  family = var.rds.db_parameter_group_family
 
   dynamic "parameter" {
     for_each = local.parameter_name_to_parameter
