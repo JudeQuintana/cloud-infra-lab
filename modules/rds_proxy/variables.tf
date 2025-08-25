@@ -14,7 +14,6 @@ variable "rds_proxy" {
   type = object({
     name = string
     rds = object({
-      # Assume MySQL by default
       engine_family      = string
       primary_identifier = string
       primary_address    = string
