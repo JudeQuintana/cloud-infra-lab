@@ -103,7 +103,7 @@ Health Check:
 
 RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary ERROR`
-- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK (bypassing RDS Proxy) or MySQL Read Replica ERROR`
+- `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
 
 ## Components
 Application Load Balancer (ALB):
@@ -154,12 +154,12 @@ Amazon RDS (MySQL):
   - Module Implemention:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
     - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
-    - Access to the read replica bypasses the RDS Proxy.
-      - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica instance access bypasses the RDS proxy with nodb pooling and failover benefits.
+    - Access to the read replica bypasses the RDS Proxy, always directly connected.
+      - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica access bypasses the RDS proxy with no db pooling and failover benefits.
 
 Security Groups:
-- Fine-grained rules for ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.
-  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS for the rds bypass to read replica.
+- Fine-grained rules for ALB ↔ EC2 ↔ RDS.
+  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS Proxy ↔ RDS (if RDS proxy is enabled).
 - Outbound rules configured for necessary security groups.
 
 Scaling Behavior:
