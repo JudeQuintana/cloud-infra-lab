@@ -107,7 +107,7 @@ locals {
             }
 
             location / {
-              return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner #SupFoo";
+              return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner";
             }
           }
         }
