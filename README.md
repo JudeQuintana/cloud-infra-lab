@@ -24,7 +24,19 @@ Beginner to intermediate level.
 Enjoy!
 
 ## Architecture
-![cloud-infra-lab](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-rds-proxy.png)
+Without RDS Proxy (default)
+![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
+
+With RDS PROXY
+  - To experiment with RDS Proxy change `var.enable_rds_proxy` ([variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
+  - If you're getting the following error for `/app1` when RDS Proxy is
+    enabled it's because AWS is waiting until the proxy default target group's status becomes "Available". It will eventually (3-5min+) come online by itself.
+```
+App 1: MySQL Primary (via RDS Proxy: true) ERROR:
+ERROR 2013 (HY000): Lost connection to MySQL server at 'handshake: reading initial communication packet', system error: 11
+```
+
+![cloud-infra-lab-with-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-with-rds-proxy.png)
 
 ## Prerequisites
 AWS:
@@ -91,12 +103,12 @@ Auto Scaling Group (ASG):
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
   - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-- Boolean to auto deploy instance refresh using latest launch template version after the launch template is modified.
+- The boolean to auto deploy instance refresh using latest launch template version after the launch template is modified (default is `true`).
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
-  - Only one instance refresh can be run at a time but will cancel any
+  - Only one instance refresh can be run at a time but will cancel any.
     in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web-asg --region us-west-2`.
-  - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh.
+  - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -114,6 +126,8 @@ Amazon RDS (MySQL):
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
+    - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
+    - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.

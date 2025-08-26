@@ -47,26 +47,27 @@ resource "aws_db_subnet_group" "this" {
 }
 
 resource "aws_db_instance" "this_primary" {
-  identifier                = local.primary_identifier
-  engine                    = var.rds.engine
-  engine_version            = var.rds.engine_version
-  instance_class            = var.rds.instance_class
-  allocated_storage         = var.rds.allocated_storage
-  storage_type              = var.rds.storage_type
-  multi_az                  = local.multi_az
-  deletion_protection       = var.rds.deletion_protection
-  vpc_security_group_ids    = var.rds.security_group_ids
-  db_subnet_group_name      = aws_db_subnet_group.this.name
-  backup_retention_period   = var.rds.backup_retention_period
-  apply_immediately         = var.rds.apply_immediately
-  parameter_group_name      = aws_db_parameter_group.this.name
-  storage_encrypted         = local.storage_encrypted
-  kms_key_id                = aws_kms_key.this.arn
-  final_snapshot_identifier = local.final_snapshot_name
-  db_name                   = var.rds.connection.db_name
-  username                  = var.rds.connection.username
-  password                  = var.rds.connection.password
-  port                      = var.rds.connection.port
+  identifier                 = local.primary_identifier
+  engine                     = var.rds.engine
+  engine_version             = var.rds.engine_version
+  instance_class             = var.rds.instance_class
+  allocated_storage          = var.rds.allocated_storage
+  storage_type               = var.rds.storage_type
+  multi_az                   = local.multi_az
+  auto_minor_version_upgrade = var.rds.auto_minor_version_upgrade
+  deletion_protection        = var.rds.deletion_protection
+  vpc_security_group_ids     = var.rds.security_group_ids
+  db_subnet_group_name       = aws_db_subnet_group.this.name
+  backup_retention_period    = var.rds.backup_retention_period
+  apply_immediately          = var.rds.apply_immediately
+  parameter_group_name       = aws_db_parameter_group.this.name
+  storage_encrypted          = local.storage_encrypted
+  kms_key_id                 = aws_kms_key.this.arn
+  final_snapshot_identifier  = local.final_snapshot_name
+  db_name                    = var.rds.connection.db_name
+  username                   = var.rds.connection.username
+  password                   = var.rds.connection.password
+  port                       = var.rds.connection.port
 
   tags = merge(
     local.default_tags,
@@ -77,14 +78,15 @@ resource "aws_db_instance" "this_primary" {
 }
 
 resource "aws_db_instance" "this_read_replica" {
-  identifier             = local.read_replica_identifier
-  replicate_source_db    = aws_db_instance.this_primary.arn
-  instance_class         = var.rds.instance_class
-  vpc_security_group_ids = var.rds.security_group_ids
-  db_subnet_group_name   = aws_db_subnet_group.this.name
-  multi_az               = local.multi_az
-  storage_encrypted      = local.storage_encrypted
-  skip_final_snapshot    = true # required for read replica
+  identifier                 = local.read_replica_identifier
+  replicate_source_db        = aws_db_instance.this_primary.arn
+  instance_class             = var.rds.instance_class
+  auto_minor_version_upgrade = var.rds.auto_minor_version_upgrade
+  vpc_security_group_ids     = var.rds.security_group_ids
+  db_subnet_group_name       = aws_db_subnet_group.this.name
+  multi_az                   = local.multi_az
+  storage_encrypted          = local.storage_encrypted
+  skip_final_snapshot        = true # required for read replica
 
   tags = merge(
     local.default_tags,

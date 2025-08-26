@@ -22,30 +22,39 @@ variable "asg" {
     alb = object({
       target_group_arn = string
     })
-    # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
-    instance_refresh = optional(bool, true)
-    min_size         = number
-    max_size         = number
+    min_size = number
+    max_size = number
     # will launch with initial desired_capacity value
     # but any updates will be ignored so that the sale in and scale out alarms takeover
     # uncomment lifecyle ignore changes for desired_capacity in the asg.
     desired_capacity          = number
+    instance_type             = string # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
+    instance_refresh          = optional(bool, true)
     health_check_grace_period = optional(number, 300)
-    instance_type             = optional(string, "t2.micro")
     cloudwatch_alarms = optional(object({
-      cpu_low = optional(object({
-        evaluation_periods = optional(number, 2)
-        period             = optional(number, 60)
-        threshold          = optional(number, 30)
-        description        = optional(string, "Scale in if CPU < 30% for 2 minutes")
-      }), {})
       cpu_high = optional(object({
         evaluation_periods = optional(number, 2)
         period             = optional(number, 60)
         threshold          = optional(number, 70)
         description        = optional(string, "Scale out if CPU > 70% for 2 minutes")
       }), {})
+      cpu_low = optional(object({
+        evaluation_periods = optional(number, 2)
+        period             = optional(number, 60)
+        threshold          = optional(number, 30)
+        description        = optional(string, "Scale in if CPU < 30% for 2 minutes")
+      }), {})
     }), {})
   })
+
+  validation {
+    condition     = var.asg.cloudwatch_alarms.cpu_high.threshold > 0 && var.asg.cloudwatch_alarms.cpu_high.threshold <= 100
+    error_message = "The cpu high threshold number should be greather than 0 and less than or equal to 100"
+  }
+
+  validation {
+    condition     = var.asg.cloudwatch_alarms.cpu_low.threshold > 0 && var.asg.cloudwatch_alarms.cpu_low.threshold <= 100
+    error_message = "The cpu low threshold number should be greater than 0 and less than or equal to 100"
+  }
 }
 

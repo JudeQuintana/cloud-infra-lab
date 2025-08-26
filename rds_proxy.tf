@@ -11,7 +11,14 @@ module "rds_proxy" {
 
   env_prefix = var.env_prefix
   rds_proxy = {
-    name                  = "app"
+    name = "app"
+    # Steady web/ECS/EKS app – balanced reuse, moderate queueing
+    # tune to your needs
+    connection_pool_config = {
+      max_connections_percent      = 85
+      max_idle_connections_percent = 40
+      connection_borrow_timeout    = 10
+    }
     rds                   = module.rds
     secretsmanager_secret = aws_secretsmanager_secret.rds
     security_group_ids    = [aws_security_group.rds_proxy_sg.id]

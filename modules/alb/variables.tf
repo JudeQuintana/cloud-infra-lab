@@ -14,6 +14,7 @@ variable "alb" {
   type = object({
     name = string
     zone = object({
+      name    = string
       zone_id = string
     })
     domain_name        = string
@@ -36,5 +37,10 @@ variable "alb" {
       ssl_policy = optional(string, "ELBSecurityPolicy-TLS13-1-0-2021-06")
     }), {})
   })
+
+  validation {
+    condition     = var.alb.domain_name != var.alb.zone.name
+    error_message = "There is no apex domain support at this time, use a subdomain of the zone for domain_name."
+  }
 }
 

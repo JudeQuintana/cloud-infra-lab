@@ -6,7 +6,7 @@ Could probably use more variable validation
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.4 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=5.61 |
 
 ## Providers
@@ -34,7 +34,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_asg"></a> [asg](#input\_asg) | ASG configuration specific to Cloud Infra Lab | <pre>object({<br/>    name = string<br/>    ami = object({<br/>      id = string<br/>    })<br/>    user_data          = string<br/>    security_group_ids = list(string)<br/>    subnet_ids         = list(string)<br/>    alb = object({<br/>      target_group_arn = string<br/>    })<br/>    instance_refresh = bool<br/>    min_size         = number<br/>    max_size         = number<br/>    # will launch with initial desired_capacity value<br/>    # but any updates will be ignored so that the sale in and scale out alarms takeover<br/>    # uncomment lifecyle ignore changes for desired_capacity in the asg.<br/>    desired_capacity          = number<br/>    health_check_grace_period = optional(number, 300)<br/>    instance_type             = optional(string, "t2.micro")<br/>    cloudwatch_alarms = optional(object({<br/>      cpu_low = optional(object({<br/>        evaluation_periods = optional(number, 2)<br/>        period             = optional(number, 60)<br/>        threshold          = optional(number, 30)<br/>        description        = optional(string, "Scale in if CPU < 30% for 2 minutes")<br/>      }), {})<br/>      cpu_high = optional(object({<br/>        evaluation_periods = optional(number, 2)<br/>        period             = optional(number, 60)<br/>        threshold          = optional(number, 70)<br/>        description        = optional(string, "Scale out if CPU > 70% for 2 minutes")<br/>      }), {})<br/>    }), {})<br/>  })</pre> | n/a | yes |
+| <a name="input_asg"></a> [asg](#input\_asg) | ASG configuration specific to Cloud Infra Lab | <pre>object({<br/>    name = string<br/>    ami = object({<br/>      id = string<br/>    })<br/>    user_data          = string<br/>    security_group_ids = list(string)<br/>    subnet_ids         = list(string)<br/>    alb = object({<br/>      target_group_arn = string<br/>    })<br/>    min_size = number<br/>    max_size = number<br/>    # will launch with initial desired_capacity value<br/>    # but any updates will be ignored so that the sale in and scale out alarms takeover<br/>    # uncomment lifecyle ignore changes for desired_capacity in the asg.<br/>    desired_capacity          = number<br/>    instance_type             = string # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified<br/>    instance_refresh          = optional(bool, true)<br/>    health_check_grace_period = optional(number, 300)<br/>    cloudwatch_alarms = optional(object({<br/>      cpu_high = optional(object({<br/>        evaluation_periods = optional(number, 2)<br/>        period             = optional(number, 60)<br/>        threshold          = optional(number, 70)<br/>        description        = optional(string, "Scale out if CPU > 70% for 2 minutes")<br/>      }), {})<br/>      cpu_low = optional(object({<br/>        evaluation_periods = optional(number, 2)<br/>        period             = optional(number, 60)<br/>        threshold          = optional(number, 30)<br/>        description        = optional(string, "Scale in if CPU < 30% for 2 minutes")<br/>      }), {})<br/>    }), {})<br/>  })</pre> | n/a | yes |
 | <a name="input_env_prefix"></a> [env\_prefix](#input\_env\_prefix) | prod, stage, test | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags | `map(string)` | `{}` | no |
 
@@ -43,3 +43,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_id"></a> [id](#output\_id) | n/a |
+| <a name="output_instance_refresh"></a> [instance\_refresh](#output\_instance\_refresh) | n/a |

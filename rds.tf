@@ -14,13 +14,24 @@ locals {
   }
 }
 
-# Multi-AZ MYSQL RDS primary and read replica DB instances by default
+# Only supports RDS engines that have the mysql string in the name, hasnt been tested with other DBs
+# Multi-AZ RDS primary and read replica DB instances by default
 module "rds" {
   source = "./modules/rds"
 
   env_prefix = var.env_prefix
   rds = {
-    name               = "app"
+    name                      = "app"
+    engine                    = "mysql"
+    engine_version            = "8.4.5"
+    db_parameter_group_family = "mysql8.4"
+    instance_class            = "db.t3.micro"
+    db_parameters = [{
+      # (Default) safest—each event contains full before/after row image for replication to read replica when using mysql rds engine
+      apply_method = "immediate"
+      name         = "binlog_row_image"
+      value        = "FULL"
+    }]
     connection         = local.rds_connection
     security_group_ids = [aws_security_group.rds_sg.id]
     subnet_ids = [
@@ -31,13 +42,13 @@ module "rds" {
 }
 
 locals {
-  rds_proxy_endpoint_or_primary_db_instance_address = var.enable_rds_proxy ? lookup(module.rds_proxy, var.enable_rds_proxy).default_endpoint : module.rds.primary_address
+  primary_host_address = var.enable_rds_proxy ? lookup(module.rds_proxy, var.enable_rds_proxy).default_endpoint : module.rds.primary_address
   # RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive)
   # therefore read replica instance access bypasses the RDS proxy
   rds_connection_with_hosts = merge(
     local.rds_connection,
     {
-      primary_host      = local.rds_proxy_endpoint_or_primary_db_instance_address
+      primary_host      = local.primary_host_address
       read_replica_host = module.rds.read_replica_address
     }
   )

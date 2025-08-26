@@ -131,6 +131,7 @@ module "asg" {
     max_size           = 8
     desired_capacity   = 2
     ami                = data.aws_ami.al2023
+    instance_type      = "t2.micro"
     user_data          = local.cloud_init
     alb                = module.alb
     security_group_ids = [aws_security_group.instance_sg.id]

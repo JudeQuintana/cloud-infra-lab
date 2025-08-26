@@ -27,14 +27,12 @@ variable "rds_proxy" {
     # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
     idle_client_timeout = optional(number, 900)
     debug_logging       = optional(bool, false)
-    default_target_group_connection_pool_config = optional(object({
-      # Steady web/ECS/EKS app – balanced reuse, moderate queueing
-      # tune to your needs
-      max_connections_percent      = optional(number, 85)
-      max_idle_connections_percent = optional(number, 40)
-      connection_borrow_timeout    = optional(number, 10)
+    connection_pool_config = object({
+      max_connections_percent      = number
+      max_idle_connections_percent = number
+      connection_borrow_timeout    = number
       session_pinning_filters      = optional(list(string))
-    }), {})
+    })
   })
 }
 

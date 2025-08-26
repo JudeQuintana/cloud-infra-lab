@@ -10,12 +10,12 @@ locals {
 }
 
 locals {
-  rds_proxy_name = format(local.name_fmt, var.env_prefix, var.rds_proxy.name)
+  name = format(local.name_fmt, var.env_prefix, var.rds_proxy.name)
 }
 
 # the default target role is READ_WRITE for the proxy endpoint
 resource "aws_db_proxy" "this" {
-  name                   = local.rds_proxy_name
+  name                   = local.name
   engine_family          = var.rds_proxy.rds.engine_family
   role_arn               = aws_iam_role.this.arn
   vpc_security_group_ids = var.rds_proxy.security_group_ids
@@ -34,13 +34,13 @@ resource "aws_db_proxy" "this" {
 }
 
 resource "aws_db_proxy_default_target_group" "this_default" {
-  db_proxy_name = aws_db_proxy.this.name
+  db_proxy_name = local.name
 
   connection_pool_config {
-    max_connections_percent      = var.rds_proxy.default_target_group_connection_pool_config.max_connections_percent
-    max_idle_connections_percent = var.rds_proxy.default_target_group_connection_pool_config.max_idle_connections_percent
-    connection_borrow_timeout    = var.rds_proxy.default_target_group_connection_pool_config.connection_borrow_timeout
-    session_pinning_filters      = var.rds_proxy.default_target_group_connection_pool_config.session_pinning_filters
+    max_connections_percent      = var.rds_proxy.connection_pool_config.max_connections_percent
+    max_idle_connections_percent = var.rds_proxy.connection_pool_config.max_idle_connections_percent
+    connection_borrow_timeout    = var.rds_proxy.connection_pool_config.connection_borrow_timeout
+    session_pinning_filters      = var.rds_proxy.connection_pool_config.session_pinning_filters
   }
 }
 
@@ -55,7 +55,7 @@ resource "terraform_data" "this_wait_for_rds_availability" {
 }
 
 resource "aws_db_proxy_target" "this_writer" {
-  db_proxy_name          = aws_db_proxy.this.name
+  db_proxy_name          = local.name
   target_group_name      = aws_db_proxy_default_target_group.this_default.name
   db_instance_identifier = var.rds_proxy.rds.primary_identifier
 
