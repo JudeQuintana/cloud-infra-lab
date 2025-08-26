@@ -35,7 +35,7 @@ ERROR 1045 (28000): Access denied for user 'admin'@'10.0.8.147' (using password:
 ![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
 
 With RDS PROXY
-  - To experiment with RDS Proxy change `var.enable_rds_proxy` ([variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
+  - To experiment with RDS Proxy change `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
   - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because AWS is waiting until the proxy default target group's status becomes "Available".
     - It will eventually (3-5min+) come online by itself.
 ```
@@ -137,7 +137,7 @@ Amazon RDS (MySQL):
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
-  - The RDS proxy can be toggled via `var.enable_rds_proxy` ([variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
+  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
   - Module Implemention:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
