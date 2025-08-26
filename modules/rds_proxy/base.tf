@@ -34,7 +34,7 @@ resource "aws_db_proxy" "this" {
 }
 
 resource "aws_db_proxy_default_target_group" "this_default" {
-  db_proxy_name = local.name
+  db_proxy_name = aws_db_proxy.this.name
 
   connection_pool_config {
     max_connections_percent      = var.rds_proxy.connection_pool_config.max_connections_percent
@@ -55,7 +55,7 @@ resource "terraform_data" "this_wait_for_rds_availability" {
 }
 
 resource "aws_db_proxy_target" "this_writer" {
-  db_proxy_name          = local.name
+  db_proxy_name          = aws_db_proxy.this.name
   target_group_name      = aws_db_proxy_default_target_group.this_default.name
   db_instance_identifier = var.rds_proxy.rds.primary_identifier
 
