@@ -102,7 +102,8 @@ Application Load Balancer (ALB):
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
-  - using Mariadb as the MYSQL client.
+  - Using `t2.micro` instance.
+  - Utilizing Mariadb as the MYSQL client.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
