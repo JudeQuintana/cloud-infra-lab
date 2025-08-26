@@ -24,6 +24,6 @@ variable "zone_name" {
 variable "enable_rds_proxy" {
   description = "Toggle for enabling RDS Proxy when needed"
   type        = bool
-  default     = false
+  default     = true
 }
 
