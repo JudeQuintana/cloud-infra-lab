@@ -25,14 +25,20 @@ Enjoy!
 
 ## Architecture
 Without RDS Proxy (default)
+  - If you're getting the following error for both `/app1` and `/app2` after applying, then something went wrong on the AWS side (I think).
+    - Try the destroy process and re-build (terraform apply again).
+    - This happens rarely but it does come up.
+```
+ERROR 1045 (28000): Access denied for user 'admin'@'10.0.8.147' (using password: YES)
+```
+
 ![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
 
 With RDS PROXY
   - To experiment with RDS Proxy change `var.enable_rds_proxy` ([variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
-  - If you're getting the following error for `/app1` when RDS Proxy is
-    enabled it's because AWS is waiting until the proxy default target group's status becomes "Available". It will eventually (3-5min+) come online by itself.
+  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because AWS is waiting until the proxy default target group's status becomes "Available".
+    - It will eventually (3-5min+) come online by itself.
 ```
-App 1: MySQL Primary (via RDS Proxy: true) ERROR:
 ERROR 2013 (HY000): Lost connection to MySQL server at 'handshake: reading initial communication packet', system error: 11
 ```
 
