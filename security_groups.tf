@@ -5,7 +5,7 @@ locals {
 
 resource "aws_security_group" "alb_sg" {
   name   = local.alb_sg_name
-  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+  vpc_id = local.app_vpc.id
 
   tags = {
     Name = local.alb_sg_name
@@ -52,7 +52,7 @@ locals {
 
 resource "aws_security_group" "instance_sg" {
   name   = local.instance_sg_name
-  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+  vpc_id = local.app_vpc.id
 
   tags = {
     Name = local.instance_sg_name
@@ -88,32 +88,43 @@ resource "aws_security_group_rule" "instance_egress_443_to_s3_us_west_2" {
   protocol  = "tcp"
 }
 
-# egress for msyql connections to rds
-resource "aws_security_group_rule" "instance_egress_3306_to_mysql_sg" {
+# need direct access for read replica bypassing RDS proxy
+# required for RDS Instances behind RDS proxy
+resource "aws_security_group_rule" "instance_egress_3306_to_rds_sg" {
   security_group_id        = aws_security_group.instance_sg.id
-  source_security_group_id = aws_security_group.mysql_sg.id
+  source_security_group_id = aws_security_group.rds_sg.id
   type                     = "egress"
   from_port                = 3306
   to_port                  = 3306
   protocol                 = "tcp"
 }
 
-### MySQL
-locals {
-  mysql_sg_name = format(local.name_fmt, var.env_prefix, "mysql-sg")
+# egress for instance connections to rds proxy
+resource "aws_security_group_rule" "instance_egress_3306_to_rds_proxy_sg" {
+  security_group_id        = aws_security_group.instance_sg.id
+  source_security_group_id = aws_security_group.rds_proxy_sg.id
+  type                     = "egress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
 }
 
-resource "aws_security_group" "mysql_sg" {
-  name   = local.mysql_sg_name
-  vpc_id = lookup(module.vpcs, local.vpc_names.app).id
+### RDS MySQL
+locals {
+  rds_sg_name = format(local.name_fmt, var.env_prefix, "rds-sg")
+}
+
+resource "aws_security_group" "rds_sg" {
+  name   = local.rds_sg_name
+  vpc_id = local.app_vpc.id
 
   tags = {
-    Name = local.mysql_sg_name
+    Name = local.rds_sg_name
   }
 }
 
-resource "aws_security_group_rule" "mysql_ingress_3306_from_instance_sg" {
-  security_group_id        = aws_security_group.mysql_sg.id
+resource "aws_security_group_rule" "rds_ingress_3306_from_instance_sg" {
+  security_group_id        = aws_security_group.rds_sg.id
   source_security_group_id = aws_security_group.instance_sg.id
   type                     = "ingress"
   from_port                = 3306
@@ -121,13 +132,50 @@ resource "aws_security_group_rule" "mysql_ingress_3306_from_instance_sg" {
   protocol                 = "tcp"
 }
 
+resource "aws_security_group_rule" "rds_ingress_3306_from_rds_proxy_sg" {
+  security_group_id        = aws_security_group.rds_sg.id
+  source_security_group_id = aws_security_group.rds_proxy_sg.id
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+}
+
 # needed for rds to connect to other aws services
-resource "aws_security_group_rule" "mysql_egress_all_to_any" {
-  security_group_id = aws_security_group.mysql_sg.id
+resource "aws_security_group_rule" "rds_egress_all_to_any" {
+  security_group_id = aws_security_group.rds_sg.id
   cidr_blocks       = ["0.0.0.0/0"]
   type              = "egress"
   from_port         = 0
   to_port           = 0
   protocol          = -1
+}
+
+### RDS Proxy
+resource "aws_security_group" "rds_proxy_sg" {
+  name   = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+  vpc_id = local.app_vpc.id
+
+  tags = {
+    Name = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+  }
+}
+
+resource "aws_security_group_rule" "rds_proxy_ingress_3306_from_instance_sg" {
+  security_group_id        = aws_security_group.rds_proxy_sg.id
+  source_security_group_id = aws_security_group.instance_sg.id
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "rds_proxy_egress_3306_to_rds_sg" {
+  security_group_id        = aws_security_group.rds_proxy_sg.id
+  source_security_group_id = aws_security_group.rds_sg.id
+  type                     = "egress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
 }
 

@@ -31,6 +31,7 @@ locals {
   # NOTE: Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   # It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
   # example: https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo
+
   vpcs = [
     {
       name = "app"
@@ -78,6 +79,11 @@ module "vpcs" {
 }
 
 locals {
-  vpc_names = { for this in module.vpcs : this.name => this.name }
+  vpc_names = { for this in local.vpcs : this.name => this.name }
+
+  # for easier referencing the instansiated app vpc object in the demo
+  # but generally would have the lookup(module.vpcs, local.vpc_names.app) everywhere
+  # when there are several vpcs (usually double lookups)
+  app_vpc = lookup(module.vpcs, local.vpc_names.app)
 }
 

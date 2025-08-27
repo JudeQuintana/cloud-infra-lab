@@ -27,24 +27,25 @@ locals {
       - socat
 
     runcmd:
-      - echo 'export MYSQL_HOST="${local.secretsmanager_mysql.host}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_PRIMARY_HOST="${local.secretsmanager_mysql.primary_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_READ_REPLICA_HOST="${local.secretsmanager_mysql.read_replica_host}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PORT="${local.secretsmanager_mysql.port}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_USERNAME="${local.secretsmanager_mysql.username}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_PASSWORD="${local.secretsmanager_mysql.password}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_DB_NAME="${local.secretsmanager_mysql.db_name}"' >> /etc/profile.d/app_env.sh
       - echo 'export MYSQL_TIMEOUT="${local.secretsmanager_mysql.timeout}"' >> /etc/profile.d/app_env.sh
+      - echo 'export MYSQL_RDS_PROXY="${var.enable_rds_proxy}"' >> /etc/profile.d/app_env.sh
 
       - |
         cat > /usr/local/bin/app1_handler.sh <<'EOF'
         #!/bin/bash
         source /etc/profile.d/app_env.sh
-        ERROR_OUTPUT=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
+        ERROR_OUTPUT=$(mysql -h "$MYSQL_PRIMARY_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
 
         if [ $? -eq 0 ]; then
-          printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK"
+        printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK (via RDS Proxy: $MYSQL_RDS_PROXY)"
         else
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary ERROR\n$ERROR_OUTPUT"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary (via RDS Proxy: $MYSQL_RDS_PROXY) ERROR:\n$ERROR_OUTPUT"
         fi
         EOF
 
@@ -57,7 +58,7 @@ locals {
         if [ $? -eq 0 ]; then
           printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
         else
-          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR\n$ERROR_OUTPUT"
+          printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR:\n$ERROR_OUTPUT"
         fi
         EOF
 
@@ -106,7 +107,7 @@ locals {
             }
 
             location / {
-              return 200 "Health: OK: MaD GrEEtz! #End2EndBurner";
+              return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner";
             }
           }
         }
@@ -117,166 +118,27 @@ locals {
   )
 }
 
-locals {
-  launch_template_name_prefix  = format(local.name_fmt, var.env_prefix, "web-")
-  web_lt_and_asg_instance_name = format(local.name_fmt, var.env_prefix, "web-instance")
-}
-
-resource "aws_launch_template" "web_lt" {
-  name_prefix            = local.launch_template_name_prefix
-  image_id               = data.aws_ami.al2023.id
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.instance_sg.id]
-  user_data              = local.cloud_init
-
-  tag_specifications {
-    resource_type = "instance"
-
-    tags = {
-      Name = local.web_lt_and_asg_instance_name
-    }
-  }
-}
-
-locals {
-  web_asg_name = format(local.name_fmt, var.env_prefix, "web-asg")
-}
-
 # It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-resource "aws_autoscaling_group" "web_asg" {
-  name             = local.web_asg_name
-  min_size         = 2
-  max_size         = 8
-  desired_capacity = 2
-  vpc_zone_identifier = [
-    lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy1"),
-    lookup(lookup(module.vpcs, local.vpc_names.app).private_subnet_name_to_subnet_id, "proxy2")
-  ]
-  target_group_arns         = [aws_lb_target_group.tg.arn]
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
+# will launch with initial desired_capacity value but any updates will be ignored so that the sale in and scale out alarms takeover
+# uncomment lifecyle ignore changes for desired_capacity in the asg resource in the asg module.
+module "asg" {
+  source = "./modules/asg"
 
-  launch_template {
-    id      = aws_launch_template.web_lt.id
-    version = "$Latest"
+  env_prefix = var.env_prefix
+  asg = {
+    name               = "web"
+    min_size           = 2
+    max_size           = 8
+    desired_capacity   = 2
+    ami                = data.aws_ami.al2023
+    instance_type      = "t2.micro"
+    user_data          = local.cloud_init
+    alb                = module.alb
+    security_group_ids = [aws_security_group.instance_sg.id]
+    subnet_ids = [
+      lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy1"),
+      lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy2")
+    ]
   }
-
-  # This tells the asg to keep 100% of your desired capacity healthy before it starts terminating old instances,
-  # and allows it to exceed capacity by up to 50% during replacements.
-  # This coincides with terraform_data.asg_instance_refresher to get 'launch before terminate' behavior.
-  instance_maintenance_policy {
-    min_healthy_percentage = 100
-    max_healthy_percentage = 150
-  }
-
-  tag {
-    key                 = "Name"
-    value               = local.web_lt_and_asg_instance_name
-    propagate_at_launch = true
-  }
-
-  # will launch with initial desired_capacity value
-  # but need to ignore future values to let cloudwatch control scaling out and in which will change the value (comment lifecycle block to take over controlling desired_capactity via TF)
-  lifecycle {
-    ignore_changes = [desired_capacity]
-  }
-}
-
-### ASG Instance refresher launch before terminate
-locals {
-  asg_instance_refresher = { for this in [var.asg_instance_refresher] : this => this if var.asg_instance_refresher }
-}
-
-resource "terraform_data" "asg_instance_refresher" {
-  for_each = local.asg_instance_refresher
-
-  # trigger on launch template user_data or image_id changes
-  # using sha1 for unique string
-  triggers_replace = [
-    sha1(aws_launch_template.web_lt.user_data),
-    aws_launch_template.web_lt.image_id
-  ]
-
-  # Automatically uses latest launch template version.
-  # Must wait until it finishes before starting a new one (10min+ depending on config) otherwise the command will error.
-  # - An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh.
-  # It won't run instance refresh command on first version of the launch template (unnecessary) but will run on subsequent changes to user_data in the launch template.
-  # MinHealthyPercentage = 100 ensures new instances are brought up before any old ones are taken down
-  provisioner "local-exec" {
-    command = <<-EOT
-      # fetch the LT’s latest version number
-      VERSION=$(aws ec2 describe-launch-templates \
-        --launch-template-ids ${aws_launch_template.web_lt.id} \
-        --query 'LaunchTemplates[0].LatestVersionNumber' --output text \
-        --region ${local.region})
-
-      if [ "$VERSION" != "1" ]; then
-        aws autoscaling start-instance-refresh \
-          --auto-scaling-group-name ${aws_autoscaling_group.web_asg.name} \
-          --preferences '${jsonencode({ InstanceWarmup = 300, MinHealthyPercentage = 100 })}' \
-          --region ${local.region}
-      fi
-    EOT
-  }
-}
-
-### CoudWatch Alarms for Scaling in and out
-# scale out based on cpu
-locals {
-  asg_policy_scale_out_name      = format(local.name_fmt, var.env_prefix, "scale-out")
-  asg_policy_scale_in_name       = format(local.name_fmt, var.env_prefix, "scale-in")
-  cloudwatch_alarm_cpu_high_name = format(local.name_fmt, var.env_prefix, "cpu-high")
-  cloudwatch_alarm_cpu_low_name  = format(local.name_fmt, var.env_prefix, "cpu-low")
-}
-
-resource "aws_autoscaling_policy" "scale_out" {
-  name                   = local.asg_policy_scale_out_name
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = aws_autoscaling_group.web_asg.name
-}
-
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = local.cloudwatch_alarm_cpu_high_name
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 70
-  alarm_description   = "Scale out if CPU > 70% for 2 minutes"
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_asg.name
-  }
-
-  alarm_actions = [aws_autoscaling_policy.scale_out.arn]
-}
-
-# scale in based on cpu
-resource "aws_autoscaling_policy" "scale_in" {
-  name                   = local.asg_policy_scale_in_name
-  scaling_adjustment     = -1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = aws_autoscaling_group.web_asg.name
-}
-
-resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = local.cloudwatch_alarm_cpu_low_name
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 30
-  alarm_description   = "Scale in if CPU < 30% for 2 minutes"
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_asg.name
-  }
-
-  alarm_actions = [aws_autoscaling_policy.scale_in.arn]
 }
 

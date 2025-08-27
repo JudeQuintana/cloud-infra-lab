@@ -1,7 +1,5 @@
 locals {
-  url       = format("%s%s/", "https://", local.domain_name)
-  endpoint1 = format("%s%s", local.url, "app1")
-  endpoint2 = format("%s%s", local.url, "app2")
+  url = format("%s%s/", "https://", local.domain_name)
 }
 
 output "url" {
@@ -9,14 +7,23 @@ output "url" {
 }
 
 output "endpoint1" {
-  value = local.endpoint1
+  value = format("%s%s", local.url, "app1")
 }
 
 output "endpoint2" {
-  value = local.endpoint2
+  value = format("%s%s", local.url, "app2")
 }
 
+# show which VPC AZ have a NATGW enabled, demo default is none
 output "vpcs_natgw_eips_per_az" {
-  value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip }
+  value = { for this in module.vpcs : this.name => this.public_natgw_az_to_eip if length(this.public_natgw_az_to_eip) > 0 }
+}
+
+output "is_asg_instance_refresh_enabled" {
+  value = module.asg.instance_refresh
+}
+
+output "is_rds_proxy_enabled" {
+  value = var.enable_rds_proxy
 }
 

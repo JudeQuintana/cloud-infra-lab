@@ -1,0 +1,38 @@
+variable "env_prefix" {
+  description = "prod, stage, test"
+  type        = string
+}
+
+variable "tags" {
+  description = "Additional tags"
+  type        = map(string)
+  default     = {}
+}
+
+variable "rds_proxy" {
+  description = "RDS Proxy configuration (RDS DB Instance for Cloud Infra Lab)"
+  type = object({
+    name = string
+    rds = object({
+      engine_family      = string
+      primary_identifier = string
+      primary_address    = string
+    })
+    secretsmanager_secret = object({
+      arn = string
+    })
+    security_group_ids = list(string)
+    subnet_ids         = list(string)
+    require_tls        = optional(bool, true)
+    # This helps recycle pinned client connections faster without being too aggressive insead of 1800 default
+    idle_client_timeout = optional(number, 900)
+    debug_logging       = optional(bool, false)
+    connection_pool_config = object({
+      max_connections_percent      = number
+      max_idle_connections_percent = number
+      connection_borrow_timeout    = number
+      session_pinning_filters      = optional(list(string))
+    })
+  })
+}
+
