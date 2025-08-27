@@ -24,14 +24,6 @@ Beginner to intermediate level.
 Enjoy!
 
 ## Architecture
-Without RDS Proxy (default)
-  - If you're getting the following error for both `/app1` and `/app2` after applying, then something went wrong on the AWS side (I think).
-    - Try the destroy process and re-build (terraform apply again).
-    - This happens rarely but it does come up.
-```
-ERROR 1045 (28000): Access denied for user 'admin'@'10.0.8.147' (using password: YES)
-```
-
 Without RDS Proxy (default):
 ![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
 
