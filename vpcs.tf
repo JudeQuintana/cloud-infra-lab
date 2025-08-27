@@ -82,8 +82,8 @@ locals {
   vpc_names = { for this in local.vpcs : this.name => this.name }
 
   # for easier referencing the instansiated app vpc object in the demo
-  # but generally would have the lookup(module.vpcs, local.vpc_names.app)
-  # when there are several vpcs
+  # but generally would have the lookup(module.vpcs, local.vpc_names.app) everywhere
+  # when there are several vpcs (usually double lookups)
   app_vpc = lookup(module.vpcs, local.vpc_names.app)
 }
 
