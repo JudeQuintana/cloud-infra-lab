@@ -15,7 +15,7 @@ module "alb" {
     name               = "app"
     zone               = data.aws_route53_zone.zone
     domain_name        = local.domain_name
-    security_group_ids = [aws_security_group.alb_sg.id]
+    security_group_ids = [aws_security_group.alb.id]
     vpc_with_subnet_ids = {
       vpc = local.app_vpc
       subnet_ids = [
