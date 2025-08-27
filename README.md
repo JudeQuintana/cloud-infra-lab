@@ -69,14 +69,6 @@ Build:
 - profit!
 
 Caveats:
-- Without RDS Proxy (default):
-  - If you're getting the following error for both `/app1` and `/app2` after applying, then something went wrong on the AWS side (I think).
-    - Try the destroy process and re-build (terraform apply again).
-    - This happens rarely but it does come up.
-```
-ERROR 1045 (28000): Access denied for user 'admin'@'10.0.8.147' (using password: YES)
-```
-
 - With RDS PROXY:
   - To experiment with RDS Proxy change `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
   - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because AWS is waiting until the proxy default target group's status becomes "Available".
