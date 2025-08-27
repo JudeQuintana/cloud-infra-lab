@@ -27,7 +27,7 @@ Enjoy!
 Without RDS Proxy (default):
 ![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
 
-With RDS PROXY:
+With RDS PROXY (via toggle):
 ![cloud-infra-lab-with-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-with-rds-proxy.png)
 
 ## Prerequisites
@@ -57,12 +57,12 @@ IPAM Configuration:
 ## Begin Demo
 Build:
 - `terraform init`
+  - To experiment with RDS Proxy change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
 - `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
 - profit!
 
 Caveats:
 - With RDS PROXY:
-  - To experiment with RDS Proxy change `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) to `true`.
   - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because AWS is waiting until the proxy default target group's status becomes "Available".
     - It will eventually (3-5min+) come online by itself.
 ```
