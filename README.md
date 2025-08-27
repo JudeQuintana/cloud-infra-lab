@@ -63,8 +63,8 @@ Build:
 
 Caveats:
 - With RDS PROXY:
-  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because AWS is waiting until the proxy default target group's status becomes "Available".
-    - It will eventually (3-5min+) come online by itself.
+  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because the RDS proxy default target group's is still becoming "Available".
+    - It will eventually come online by itself after 3-5min+.
 ```
 ERROR 2013 (HY000): Lost connection to MySQL server at 'handshake: reading initial communication packet', system error: 11
 ```
