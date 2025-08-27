@@ -43,9 +43,9 @@ Zone and Domain:
   - Demo is not configured for an apex domain at this time.
 
 IPAM Configuration:
-- There are many ways to configure IPAM so I manually created IPAM pools (advanced tier) in the AWS UI.
-- You'll need to configure your own IPv4 pools/subpools in IPAM.
-  - Demo will look up the IPAM pools via filter on description and ipv4 type.
+- There are many ways to configure IPAM.
+  - You'll need to manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
+  - The demo will look up the IPAM pools via filter on description and ipv4 type.
 - Advanced Tier IPAM in `us-west-2` operating reigons.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (ipam locale)
