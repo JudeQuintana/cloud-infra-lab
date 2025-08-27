@@ -36,7 +36,7 @@ resource "aws_security_group_rule" "alb_ingress_443_from_any" {
   protocol          = "tcp"
 }
 
-resource "aws_security_group_rule" "alb_egress_80_to_instancesg" {
+resource "aws_security_group_rule" "alb_egress_80_to_instance" {
   security_group_id        = aws_security_group.alb.id
   source_security_group_id = aws_security_group.instance.id
   type                     = "egress"
