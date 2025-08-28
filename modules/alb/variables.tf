@@ -33,9 +33,7 @@ variable "alb" {
       interval            = optional(number, 30)
       timeout             = optional(number, 5)
     }), {})
-    https_listener = optional(object({
-      ssl_policy = optional(string, "ELBSecurityPolicy-TLS13-1-0-2021-06")
-    }), {})
+    ssl_policy = optional(string, "ELBSecurityPolicy-TLS13-1-0-2021-06")
   })
 
   validation {
