@@ -63,7 +63,7 @@ Build:
 
 Caveats:
 - With RDS PROXY:
-  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because the RDS proxy default target group's is still becoming "Available".
+  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because the RDS proxy default target group is still becoming "Available".
     - It will eventually come online by itself after 3-5min+.
 ```
 ERROR 2013 (HY000): Lost connection to MySQL server at 'handshake: reading initial communication packet', system error: 11
@@ -144,7 +144,7 @@ Amazon RDS (MySQL):
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
-  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS Proxy ↔ RDS (if RDS proxy is enabled).
+  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS (if RDS proxy is enabled).
 - Outbound rules configured for necessary security groups.
 
 Scaling Behavior:
