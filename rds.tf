@@ -1,7 +1,9 @@
 # valid mysql db admin pass
+# dont use $ for issues with variable expansion in the shell on the ec2 host
+# or other potntial problematic characters like ; / "
 resource "random_password" "rds_password" {
   length           = 32
-  override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%^&*()-_=+[]{}:;,.?"
+  override_special = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#%^&*()-_=+[]{};,.?"
 }
 
 locals {
