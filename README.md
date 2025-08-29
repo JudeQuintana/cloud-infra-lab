@@ -54,6 +54,9 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
+## Bug fixes
+- [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
+
 ## Begin Demo
 Build:
 - `terraform init`
