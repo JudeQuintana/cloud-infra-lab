@@ -32,6 +32,11 @@ variable "asg" {
     # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
     instance_refresh          = optional(bool, true)
     health_check_grace_period = optional(number, 300)
+    # root volume
+    ebs = optional(object({
+      root_volume_type = optional(string, "gp3")
+      root_volume_size = optional(number, 8)
+    }), {})
     cloudwatch_alarms = optional(object({
       cpu_high = optional(object({
         evaluation_periods = optional(number, 2)

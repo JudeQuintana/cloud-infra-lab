@@ -54,9 +54,6 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
-## Bug fixes
-- [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
-
 ## Begin Demo
 Build:
 - `terraform init`
@@ -84,6 +81,9 @@ Tear Down:
 - Delete snapshot that was created when destroying the DB.
   - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-primary-final-snapshot --region us-west-2`
 
+## Bug fixes
+- [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
+
 ## Endpoints
 Health Check:
 - `https://cloud.some.domain/` -> `NGINX Health: OK: MaD GrEEtz! #End2EndBurner`
@@ -100,7 +100,7 @@ Application Load Balancer (ALB):
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
-  - Using `t2.micro` instance.
+  - Using `t2.micro` instance with encrypted root volumes.
   - Utilizing Mariadb as the MYSQL client.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.

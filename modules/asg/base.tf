@@ -1,4 +1,8 @@
+# pull caller identity from provider
+data "aws_caller_identity" "this" {}
+
 locals {
+  account_id = data.aws_caller_identity.this.account_id
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
@@ -15,6 +19,19 @@ resource "aws_launch_template" "this" {
   instance_type          = var.asg.instance_type
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
+
+  block_device_mappings {
+    # root device
+    device_name = "/dev/xvda"
+
+    ebs {
+      encrypted             = true
+      delete_on_termination = true
+      kms_key_id            = aws_kms_key.this.arn
+      volume_type           = var.asg.ebs.root_volume_type
+      volume_size           = var.asg.ebs.root_volume_size
+    }
+  }
 
   tag_specifications {
     resource_type = "instance"
@@ -73,6 +90,12 @@ resource "aws_autoscaling_group" "this" {
   tag {
     key                 = "Name"
     value               = local.web_lt_and_asg_instance_name
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Environment"
+    value               = var.env_prefix
     propagate_at_launch = true
   }
 
