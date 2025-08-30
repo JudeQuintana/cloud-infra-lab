@@ -163,6 +163,7 @@ VPC:
 ## Infra Cost Breakdown
 - Without RDS Proxy (default):
 
+```
 Project: main
 
  Name                                                           Monthly Qty  Unit                    Monthly Cost
@@ -234,6 +235,7 @@ Project: main
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━╋━━━━━━━━━━━━┫
 ┃ main                                               ┃           $96 ┃           - ┃        $96 ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
+```
 
 - With RDS Proxy (via toggle):
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
