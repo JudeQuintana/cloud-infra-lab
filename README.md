@@ -81,9 +81,6 @@ Tear Down:
 - Delete snapshot that was created when destroying the DB.
   - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-primary-final-snapshot --region us-west-2`
 
-## Bug fixes
-- [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
-
 ## Endpoints
 Health Check:
 - `https://cloud.some.domain/` -> `NGINX Health: OK: MaD GrEEtz! #End2EndBurner`
@@ -91,6 +88,12 @@ Health Check:
 RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary ERROR`
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
+
+## Bug fixes
+- [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
+
+## TODO
+- Add SSM to ASG intances to access secrets manager
 
 ## Components
 Application Load Balancer (ALB):
