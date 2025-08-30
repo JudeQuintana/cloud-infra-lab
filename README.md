@@ -131,10 +131,6 @@ Amazon RDS (MySQL):
   ASG instances to RDS directly).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
 - RDS Proxy: is for scaling connections and managing failover smoother.
-  - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
-    - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
-    - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
-    - That means the proxy can actually cost as much as, or more than, the tiny database itself.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
   - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
@@ -163,6 +159,88 @@ VPC:
 - Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   - It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
   - example: [Centralized Egress Demo](https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo)
+
+## Infra Cost Breakdown
+- Without RDS Proxy (default):
+
+Project: main
+
+ Name                                                           Monthly Qty  Unit                    Monthly Cost
+
+ module.rds.aws_db_instance.this_primary
+ ├─ Database instance (on-demand, Multi-AZ, db.t3.micro)                730  hours                         $24.82
+ ├─ Storage (general purpose SSD, gp2)                                   20  GB                             $4.60
+ └─ Additional backup storage                             Monthly cost depends on usage: $0.095 per GB
+
+ module.rds.aws_db_instance.this_read_replica
+ ├─ Database instance (on-demand, Multi-AZ, db.t3.micro)                730  hours                         $24.82
+ └─ Storage (general purpose SSD, gp2)                                   20  GB                             $4.60
+
+ module.asg.aws_autoscaling_group.this
+ └─ module.asg.aws_launch_template.this
+    ├─ Instance usage (Linux/UNIX, on-demand, t2.micro)               1,460  hours                         $16.94
+    └─ block_device_mapping[0]
+       └─ Storage (general purpose SSD, gp3)                             16  GB                             $1.28
+
+ module.alb.aws_lb.this
+ ├─ Application load balancer                                           730  hours                         $16.43
+ └─ Load balancer capacity units                          Monthly cost depends on usage: $5.84 per LCU
+
+ module.asg.aws_kms_key.this
+ ├─ Customer master key                                                   1  months                         $1.00
+ ├─ Requests                                              Monthly cost depends on usage: $0.03 per 10k requests
+ ├─ ECC GenerateDataKeyPair requests                      Monthly cost depends on usage: $0.10 per 10k requests
+ └─ RSA GenerateDataKeyPair requests                      Monthly cost depends on usage: $0.10 per 10k requests
+
+ module.rds.aws_kms_key.this
+ ├─ Customer master key                                                   1  months                         $1.00
+ ├─ Requests                                              Monthly cost depends on usage: $0.03 per 10k requests
+ ├─ ECC GenerateDataKeyPair requests                      Monthly cost depends on usage: $0.10 per 10k requests
+ └─ RSA GenerateDataKeyPair requests                      Monthly cost depends on usage: $0.10 per 10k requests
+
+ aws_secretsmanager_secret.rds
+ ├─ Secret                                                                1  months                         $0.40
+ └─ API requests                                          Monthly cost depends on usage: $0.05 per 10k requests
+
+ module.asg.aws_cloudwatch_metric_alarm.this_cpu_high
+ └─ Standard resolution                                                   1  alarm metrics                  $0.10
+
+ module.asg.aws_cloudwatch_metric_alarm.this_cpu_low
+ └─ Standard resolution                                                   1  alarm metrics                  $0.10
+
+ module.alb.aws_route53_record.this_alb_cname
+ ├─ Standard queries (first 1B)                           Monthly cost depends on usage: $0.40 per 1M queries
+ ├─ Latency based routing queries (first 1B)              Monthly cost depends on usage: $0.60 per 1M queries
+ └─ Geo DNS queries (first 1B)                            Monthly cost depends on usage: $0.70 per 1M queries
+
+ module.alb.aws_route53_record.this_cert_validation
+ ├─ Standard queries (first 1B)                           Monthly cost depends on usage: $0.40 per 1M queries
+ ├─ Latency based routing queries (first 1B)              Monthly cost depends on usage: $0.60 per 1M queries
+ └─ Geo DNS queries (first 1B)                            Monthly cost depends on usage: $0.70 per 1M queries
+
+ OVERALL TOTAL                                                                                            $96.08
+
+*Usage costs can be estimated by updating Infracost Cloud settings, see docs for other options.
+
+──────────────────────────────────
+69 cloud resources were detected:
+∙ 11 were estimated
+∙ 57 were free
+∙ 1 is not supported yet, see https://infracost.io/requested-resources:
+  ∙ 1 x aws_db_proxy
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Project                                            ┃ Baseline cost ┃ Usage cost* ┃ Total cost ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━╋━━━━━━━━━━━━┫
+┃ main                                               ┃           $96 ┃           - ┃        $96 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
+
+- With RDS Proxy (via toggle):
+  - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
+    - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
+    - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
+    - That means the proxy can actually cost as much as, or more than, the tiny database itself.
+  - Result: $96 (default monthly cost) + $22 (rds proxy monthly cost) = roughly $118 a month to run Cloud Infra Demo with RDS Proxy
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:
