@@ -20,6 +20,16 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
 
+  # IMDSv2 only: stops SSRF/metadata theft via IMDSv1.
+  # Hop limit 1: no accidental container/proxy access to IMDS.
+  # No public IPs: private-only hosts behind ALB.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # IMDSv2 only
+    http_put_response_hop_limit = 1          # no multi-hop access
+    instance_metadata_tags      = "disabled" # stop leaking tags into IMDS
+  }
+
   block_device_mappings {
     # root device
     device_name = "/dev/xvda"
@@ -46,13 +56,17 @@ resource "aws_launch_template" "this" {
 }
 
 resource "aws_autoscaling_group" "this" {
-  name                      = local.name
-  min_size                  = var.asg.min_size
-  max_size                  = var.asg.max_size
-  desired_capacity          = var.asg.desired_capacity
-  vpc_zone_identifier       = var.asg.subnet_ids
-  target_group_arns         = [var.asg.alb.target_group_arn]
-  health_check_type         = "EC2"
+  name                = local.name
+  min_size            = var.asg.min_size
+  max_size            = var.asg.max_size
+  desired_capacity    = var.asg.desired_capacity
+  vpc_zone_identifier = var.asg.subnet_ids
+  target_group_arns   = [var.asg.alb.target_group_arn]
+
+  # By default, an ASG uses EC2 health checks, which only look at the instance state reported by the EC2 service (e.g., running, stopped, impaired).
+  # When you set health_check_type = "ELB", the ASG also considers the health checks reported by the load balancer that your instances are registered to.
+  #If the ELB reports an instance as unhealthy (e.g., because it fails the load balancer’s health check on your app port), the ASG will terminate and replace that instance automatically.
+  health_check_type         = "ELB"
   health_check_grace_period = var.asg.health_check_grace_period
 
   launch_template {
