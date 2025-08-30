@@ -18,6 +18,7 @@ locals {
   # should use readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
   secretsmanager_mysql = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
 
+  # should use ssm intsead of rendering passwords direct into user data
   cloud_init = base64encode(<<-CLOUD_INIT
     #cloud-config
     package_update: true
