@@ -152,12 +152,16 @@ resource "aws_security_group_rule" "rds_egress_all_to_any" {
 }
 
 ### RDS Proxy
+locals {
+  rds_proxy_sg_name = format(local.name_fmt, var.env_prefix, "rds-proxy")
+}
+
 resource "aws_security_group" "rds_proxy" {
-  name   = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+  name   = local.rds_proxy_sg_name
   vpc_id = local.app_vpc.id
 
   tags = {
-    Name = format("%s-%s", var.env_prefix, "rds-proxy-sg")
+    Name = local.rds_proxy_sg_name
   }
 }
 
