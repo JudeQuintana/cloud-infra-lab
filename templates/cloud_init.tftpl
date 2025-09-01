@@ -1,0 +1,141 @@
+#cloud-config
+package_update: true
+packages:
+  - mariadb105
+  - nginx
+  - socat
+
+write_files:
+  # --- Centralized env file (read-only for root) ---
+  - path: /etc/app/app.env
+    owner: root:root
+    permissions: '0400'
+    content: |
+      MYSQL_PRIMARY_HOST='${primary_host}'
+      MYSQL_READ_REPLICA_HOST='${read_replica_host}'
+      MYSQL_PORT='${port}'
+      MYSQL_USERNAME='${username}'
+      MYSQL_PASSWORD='${password}'
+      MYSQL_DB_NAME='${db_name}'
+      MYSQL_TIMEOUT='${timeout}'
+      MYSQL_RDS_PROXY='${enable_rds_proxy}'
+
+  # --- Handlers ---
+  - path: /usr/local/bin/app1_handler.sh
+    owner: root:root
+    permissions: '0500'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      ERROR_OUTPUT=$(mysql -h "$MYSQL_PRIMARY_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK (via RDS Proxy: $MYSQL_RDS_PROXY)"
+      else
+        printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary (via RDS Proxy: $MYSQL_RDS_PROXY) ERROR:\n$ERROR_OUTPUT"
+      fi
+
+  - path: /usr/local/bin/app2_handler.sh
+    owner: root:root
+    permissions: '0500'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
+      else
+        printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR:\n$ERROR_OUTPUT"
+      fi
+
+  # --- Tiny TCP servers ---
+  - path: /usr/local/bin/app1.sh
+    owner: root:root
+    permissions: '0500'
+    content: |
+      #!/bin/bash
+      exec socat TCP-LISTEN:8081,reuseaddr,fork EXEC:"/usr/local/bin/app1_handler.sh"
+
+  - path: /usr/local/bin/app2.sh
+    owner: root:root
+    permissions: '0500'
+    content: |
+      #!/bin/bash
+      exec socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
+
+  # --- systemd units ---
+  - path: /etc/systemd/system/app1.service
+    owner: root:root
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=App1 TCP service on 8081
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      EnvironmentFile=/etc/app/app.env
+      ExecStartPre=/bin/sh -c 'command -v mysql'
+      ExecStart=/usr/local/bin/app1.sh
+      Restart=always
+      RestartSec=2s
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/systemd/system/app2.service
+    owner: root:root
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=App2 TCP service on 8082
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      EnvironmentFile=/etc/app/app.env
+      ExecStartPre=/bin/sh -c 'command -v mysql'
+      ExecStart=/usr/local/bin/app2.sh
+      Restart=always
+      RestartSec=2s
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # --- nginx ---
+  - path: /etc/nginx/nginx.conf
+    owner: root:root
+    permissions: '0644'
+    content: |
+      user nginx;
+      worker_processes auto;
+      error_log /var/log/nginx/error.log;
+      pid /run/nginx.pid;
+
+      events {
+        worker_connections 1024;
+      }
+
+      http {
+        include       /etc/nginx/mime.types;
+        default_type  text/plain;
+        keepalive_timeout  60;
+
+        server {
+          listen 0.0.0.0:80;
+
+          location /app1 { proxy_pass http://localhost:8081; }
+          location /app2 { proxy_pass http://localhost:8082; }
+
+          location / {
+            return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner #SupFoov2";
+          }
+        }
+      }
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable --now app1.service
+  - systemctl enable --now app2.service
+  - systemctl enable --now nginx
