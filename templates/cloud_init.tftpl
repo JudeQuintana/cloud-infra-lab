@@ -9,7 +9,7 @@ write_files:
   # --- Centralized env file (read-only for root) ---
   - path: /etc/app/app.env
     owner: root:root
-    permissions: '0400'
+    permissions: '0600'
     content: |
       MYSQL_PRIMARY_HOST='${primary_host}'
       MYSQL_READ_REPLICA_HOST='${read_replica_host}'
@@ -23,7 +23,7 @@ write_files:
   # --- Handlers ---
   - path: /usr/local/bin/app1_handler.sh
     owner: root:root
-    permissions: '0500'
+    permissions: '0744'
     content: |
       #!/bin/bash
       set -euo pipefail
@@ -36,7 +36,7 @@ write_files:
 
   - path: /usr/local/bin/app2_handler.sh
     owner: root:root
-    permissions: '0500'
+    permissions: '0744'
     content: |
       #!/bin/bash
       set -euo pipefail
@@ -50,14 +50,14 @@ write_files:
   # --- Tiny TCP servers ---
   - path: /usr/local/bin/app1.sh
     owner: root:root
-    permissions: '0500'
+    permissions: '0744'
     content: |
       #!/bin/bash
       exec socat TCP-LISTEN:8081,reuseaddr,fork EXEC:"/usr/local/bin/app1_handler.sh"
 
   - path: /usr/local/bin/app2.sh
     owner: root:root
-    permissions: '0500'
+    permissions: '0744'
     content: |
       #!/bin/bash
       exec socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
