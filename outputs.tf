@@ -28,7 +28,7 @@ output "rds_proxy_enabled" {
 }
 
 # display endpoints
-output "rds_addresses" {
+output "rds" {
   value = module.rds
 }
 
