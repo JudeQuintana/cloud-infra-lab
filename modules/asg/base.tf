@@ -22,7 +22,6 @@ resource "aws_launch_template" "this" {
 
   # IMDSv2 only: stops SSRF/metadata theft via IMDSv1.
   # Hop limit 1: no accidental container/proxy access to IMDS.
-  # No public IPs: private-only hosts behind ALB.
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required" # IMDSv2 only

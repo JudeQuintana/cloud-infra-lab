@@ -20,7 +20,7 @@ locals {
   # If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set natgw = true and you'll need to add an egress security group rule to the instances security group.
   # for example this security group rule would allow https outbound to the internet:
   # resource "aws_security_group_rule" "instance_egress_allow_443_to_internet" {
-  #   security_group_id = aws_security_group.instance_sg.id
+  #   security_group_id = aws_security_group.instance.id
   #   cidr_blocks       = ["0.0.0.0/0"]
   #   type              = "egress"
   #   from_port         = 443
