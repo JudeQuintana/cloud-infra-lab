@@ -28,10 +28,10 @@ output "rds_proxy_enabled" {
 }
 
 output "primary_db_address" {
-  value = module.rds.primary_db_address
+  value = module.rds.primary_address
 }
 
 output "read_replica_db_address" {
-  value = module.rds.read_replica_db_address
+  value = module.rds.read_replica_address
 }
 
