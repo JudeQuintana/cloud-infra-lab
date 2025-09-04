@@ -46,7 +46,7 @@ IPAM Configuration:
 - There are many ways to configure IPAM.
   - You'll need to manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
   - The demo will look up the IPAM pools via filter on description and ipv4 type.
-- Advanced Tier IPAM in `us-west-2` operating reigons.
+- Advanced Tier IPAM in `us-west-2` operating regions.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (ipam locale)
     - IPv4 Pool (private scope)
@@ -93,7 +93,7 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Add SSM to ASG intances to access secrets manager
+- Add SSM to ASG instances to access secrets manager
 
 ## Components
 Application Load Balancer (ALB):
@@ -157,7 +157,7 @@ Scaling Behavior:
 VPC:
 - Requires IPAM.
 - Uses Tiered VPC-NG module.
-- Currenlty utilizing 2 AZs but more can be added.
+- Currently utilizing 2 AZs but more can be added.
 - Has a VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
 - Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   - It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
