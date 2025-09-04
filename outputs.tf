@@ -27,8 +27,11 @@ output "rds_proxy_enabled" {
   value = var.enable_rds_proxy
 }
 
-# display endpoints
-output "rds" {
-  value = module.rds
+output "primary_db_address" {
+  value = module.rds.primary_db_address
+}
+
+output "read_replica_db_address" {
+  value = module.rds.read_replica_db_address
 }
 
