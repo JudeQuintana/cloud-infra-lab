@@ -35,7 +35,7 @@ module "rds" {
       value        = "FULL"
     }]
     connection         = local.rds_connection
-    security_group_ids = [aws_security_group.rds.id]
+    security_group_ids = [module.rds_security_group.id]
     subnet_ids = [
       lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db1"),
       lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db2")

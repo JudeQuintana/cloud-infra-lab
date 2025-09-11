@@ -41,7 +41,7 @@ module "asg" {
     instance_type      = "t2.micro"
     user_data          = local.cloud_init
     alb                = module.alb
-    security_group_ids = [aws_security_group.instance.id]
+    security_group_ids = [module.instance_security_group.id]
     subnet_ids = [
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy1"),
       lookup(local.app_vpc.private_subnet_name_to_subnet_id, "proxy2")
