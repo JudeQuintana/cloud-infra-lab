@@ -2,7 +2,7 @@ resource "aws_lb_target_group" "this" {
   name     = local.name
   port     = 80
   protocol = "HTTP"
-  vpc_id   = var.alb.vpc_with_subnet_ids.vpc.id
+  vpc_id   = var.alb.vpc.id
 
   health_check {
     path                = var.alb.target_group_health_check.path
