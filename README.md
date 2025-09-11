@@ -146,7 +146,7 @@ Amazon RDS (MySQL):
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
-  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS (if RDS proxy is enabled).
+  - And ALB ↔ EC2 ↔ RDS Proxy ↔ RDS.
 - Outbound rules configured for necessary security groups.
 
 Scaling Behavior:

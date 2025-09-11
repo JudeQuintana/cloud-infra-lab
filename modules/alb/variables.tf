@@ -19,12 +19,10 @@ variable "alb" {
     })
     domain_name        = string
     security_group_ids = list(string)
-    vpc_with_subnet_ids = object({
-      vpc = object({
-        id = string
-      })
-      subnet_ids = list(string)
+    vpc = object({
+      id = string
     })
+    subnet_ids = list(string)
     target_group_health_check = optional(object({
       path                = optional(string, "/")
       matcher             = optional(string, "200")
