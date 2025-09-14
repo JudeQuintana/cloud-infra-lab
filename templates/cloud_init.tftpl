@@ -84,7 +84,7 @@ write_files:
   # --- systemd units ---
   - path: /etc/systemd/system/app1.service
     owner: root:root
-    permissions: '0600'
+    permissions: '0644'
     content: |
       [Unit]
       Description=App1 TCP service on 8081
@@ -125,7 +125,7 @@ write_files:
 
   - path: /etc/systemd/system/app2.service
     owner: root:root
-    permissions: '0600'
+    permissions: '0644'
     content: |
       [Unit]
       Description=App2 TCP service on 8082
@@ -167,7 +167,7 @@ write_files:
   # --- nginx ---
   - path: /etc/nginx/nginx.conf
     owner: root:root
-    permissions: '0600'
+    permissions: '0644'
     # wait for packages to finish installing and updating before writing file
     defer: true
     content: |
