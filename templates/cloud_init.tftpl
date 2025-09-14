@@ -168,6 +168,8 @@ write_files:
   - path: /etc/nginx/nginx.conf
     owner: root:root
     permissions: '0600'
+    # wait for packages to finish installing and updating before writing file
+    defer: true
     content: |
       user nginx;
       worker_processes auto;
@@ -195,7 +197,7 @@ write_files:
           }
 
           location / {
-            return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner";
+            return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner #v3";
           }
         }
       }
