@@ -54,6 +54,18 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
+Notes:
+- Cloud Infra Lab attempts to demonstrate:
+  - Opinionated object oriented patterns.
+    - Uses configuration objects.
+    - Passing modules to modules instead of nesting.
+    - Sane defaults and variable validation examples.
+    - Composition and flexible architecture via abstraction.
+    - Modules as classes and inputs as constructors.
+    - Interfaces via contracts.
+- Terraform state is local in this lab.
+  - Users should decide what they need for remote state.
+
 ## Begin Demo
 Build:
 - `terraform init`
@@ -105,6 +117,13 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
   - Using `t2.micro` instance with encrypted root volumes.
   - Utilizing Mariadb as the MYSQL client.
+  - Some IMDSv2 confiuration in metadata_optinas.
+    - Stops SSRF/metadata theft via IMDSv1.
+    - No Multihop access.
+    - Stop leaking tags into IMDS.
+  - Hardened systemd configuration.
+    - Locked down enviroment variables for mysql credentials.
+    - App services run with non privileged user.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
