@@ -1,4 +1,11 @@
 #cloud-config
+bootcmd:
+# need to add app1 and app2 user and group at boot because
+# due to cloud init execution order group: and users: execute
+# after write_files:
+  - [ /usr/sbin/useradd, -r, -M, -s, /usr/sbin/nologin, -U, app1 ]
+  - [ /usr/sbin/useradd, -r, -M, -s, /usr/sbin/nologin, -U, app2 ]
+
 package_update: true
 packages:
   - mariadb105
@@ -22,45 +29,57 @@ write_files:
 
   # --- Handlers ---
   - path: /usr/local/bin/app1_handler.sh
-    owner: root:root
-    permissions: '0744'
+    owner: root:app1
+    permissions: '0750'
     content: |
       #!/bin/bash
-      set -euo pipefail
-      ERROR_OUTPUT=$(mysql -h "$MYSQL_PRIMARY_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
+      # not setting -e here becuase i dont want the script to exit if mysql fails
+      set -uo pipefail
+      ERROR_OUTPUT=$(/usr/bin/mysql -h "$MYSQL_PRIMARY_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
       if [ $? -eq 0 ]; then
-        printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary OK (via RDS Proxy: $MYSQL_RDS_PROXY)"
+        printf 'HTTP/1.1 200 OK\r\n'
+        printf 'Content-Type: text/plain\r\n\r\n'
+        printf 'App 1: MySQL Primary OK (via RDS Proxy: %s)\n' "$MYSQL_RDS_PROXY"
       else
-        printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 1: MySQL Primary (via RDS Proxy: $MYSQL_RDS_PROXY) ERROR:\n$ERROR_OUTPUT"
+        printf 'HTTP/1.1 503 Service Unavailable\r\n'
+        printf 'Content-Type: text/plain\r\n\r\n'
+        printf 'App 1: MySQL Primary (via RDS Proxy: %s) ERROR:\n' "$MYSQL_RDS_PROXY"
+        printf '%s\n' "$ERROR_OUTPUT"
       fi
 
   - path: /usr/local/bin/app2_handler.sh
-    owner: root:root
-    permissions: '0744'
+    owner: root:app2
+    permissions: '0750'
     content: |
       #!/bin/bash
-      set -euo pipefail
-      ERROR_OUTPUT=$(mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
+      # not setting -e here becuase i dont want the script to exit if mysql fails
+      set -uo pipefail
+      ERROR_OUTPUT=$(/usr/bin/mysql -h "$MYSQL_READ_REPLICA_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "SELECT 1;" --init-command="SET SESSION wait_timeout=$MYSQL_TIMEOUT" --ssl "$MYSQL_DB_NAME" 2>&1)
       if [ $? -eq 0 ]; then
-        printf "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica OK"
+        printf 'HTTP/1.1 200 OK\r\n'
+        printf 'Content-Type: text/plain\r\n\r\n'
+        printf 'App 2: MySQL Primary OK (via RDS Proxy: %s)\n' "$MYSQL_RDS_PROXY"
       else
-        printf "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\nApp 2: MySQL Read Replica ERROR:\n$ERROR_OUTPUT"
+        printf 'HTTP/1.1 503 Service Unavailable\r\n'
+        printf 'Content-Type: text/plain\r\n\r\n'
+        printf 'App 2: MySQL Primary (via RDS Proxy: %s) ERROR:\n' "$MYSQL_RDS_PROXY"
+        printf '%s\n' "$ERROR_OUTPUT"
       fi
 
   # --- Tiny TCP servers ---
   - path: /usr/local/bin/app1.sh
-    owner: root:root
-    permissions: '0744'
+    owner: root:app1
+    permissions: '0750'
     content: |
       #!/bin/bash
-      exec socat TCP-LISTEN:8081,reuseaddr,fork EXEC:"/usr/local/bin/app1_handler.sh"
+      exec /usr/bin/socat TCP-LISTEN:8081,reuseaddr,fork EXEC:"/usr/local/bin/app1_handler.sh"
 
   - path: /usr/local/bin/app2.sh
-    owner: root:root
-    permissions: '0744'
+    owner: root:app2
+    permissions: '0750'
     content: |
       #!/bin/bash
-      exec socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
+      exec /usr/bin/socat TCP-LISTEN:8082,reuseaddr,fork EXEC:"/usr/local/bin/app2_handler.sh"
 
   # --- systemd units ---
   - path: /etc/systemd/system/app1.service
@@ -79,6 +98,27 @@ write_files:
       ExecStart=/usr/local/bin/app1.sh
       Restart=always
       RestartSec=2s
+      User=app1
+      Group=app1
+      StateDirectory=app1
+      RuntimeDirectory=app1
+      LogsDirectory=app1
+      WorkingDirectory=/var/lib/app1
+      # Security hardening
+      NoNewPrivileges=yes
+      PrivateTmp=true
+      ProtectSystem=strict
+      ProtectHome=true
+      ProtectKernelTunables=yes
+      ProtectKernelModules=yes
+      ProtectControlGroups=yes
+      LockPersonality=yes
+      RestrictRealtime=yes
+      RestrictSUIDSGID=yes
+      CapabilityBoundingSet=
+      AmbientCapabilities=
+      SystemCallFilter=@system-service
+      UMask=027
 
       [Install]
       WantedBy=multi-user.target
@@ -99,6 +139,27 @@ write_files:
       ExecStart=/usr/local/bin/app2.sh
       Restart=always
       RestartSec=2s
+      User=app2
+      Group=app2
+      StateDirectory=app2
+      RuntimeDirectory=app2
+      LogsDirectory=app2
+      WorkingDirectory=/var/lib/app2
+      # Security hardening
+      NoNewPrivileges=yes
+      PrivateTmp=true
+      ProtectSystem=strict
+      ProtectHome=true
+      ProtectKernelTunables=yes
+      ProtectKernelModules=yes
+      ProtectControlGroups=yes
+      LockPersonality=yes
+      RestrictRealtime=yes
+      RestrictSUIDSGID=yes
+      CapabilityBoundingSet=
+      AmbientCapabilities=
+      SystemCallFilter=@system-service
+      UMask=027
 
       [Install]
       WantedBy=multi-user.target
@@ -107,6 +168,8 @@ write_files:
   - path: /etc/nginx/nginx.conf
     owner: root:root
     permissions: '0644'
+    # wait for packages to finish installing and updating before writing file
+    defer: true
     content: |
       user nginx;
       worker_processes auto;
@@ -125,8 +188,13 @@ write_files:
         server {
           listen 0.0.0.0:80;
 
-          location /app1 { proxy_pass http://localhost:8081; }
-          location /app2 { proxy_pass http://localhost:8082; }
+          location /app1 {
+            proxy_pass http://127.0.0.1:8081;
+          }
+
+          location /app2 {
+            proxy_pass http://127.0.0.1:8082;
+          }
 
           location / {
             return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner";
@@ -135,7 +203,8 @@ write_files:
       }
 
 runcmd:
-  - systemctl daemon-reload
-  - systemctl enable --now app1.service
-  - systemctl enable --now app2.service
-  - systemctl enable --now nginx
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, app1.service ]
+  - [ systemctl, enable, --now, app2.service ]
+  - [ systemctl, enable, --now, nginx ]
+

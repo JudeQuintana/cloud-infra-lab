@@ -16,6 +16,7 @@ locals {
 resource "aws_launch_template" "this" {
   name_prefix            = local.launch_template_name_prefix
   image_id               = var.asg.ami.id
+  key_name               = var.asg.key_name
   instance_type          = var.asg.instance_type
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
