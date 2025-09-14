@@ -55,6 +55,14 @@ IPAM Configuration:
         - `10.0.0.0/18`
 
 Notes:
+- Cloud Infra Lab attempts to demonstrate:
+  - Opinionated object oriented patterns.
+    - Uses configuration objects.
+    - Passing modules to modules instead of nesting.
+    - Sane defaults and variable validation examples.
+    - Composition and flexible architecture via abstraction.
+    - Modules as classes and inputs as constructors.
+    - Interfaces via contracts.
 - Terraform state is local in this lab.
   - Users should decide what they need for remote state.
 
