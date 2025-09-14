@@ -201,8 +201,8 @@ write_files:
       }
 
 runcmd:
-  - systemctl daemon-reload
-  - systemctl enable --now app1.service
-  - systemctl enable --now app2.service
-  - systemctl enable --now nginx
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, app1.service ]
+  - [ systemctl, enable, --now, app2.service ]
+  - [ systemctl, enable, --now, nginx ]
 
