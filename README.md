@@ -109,8 +109,9 @@ Auto Scaling Group (ASG):
     - Stops SSRF/metadata theft via IMDSv1.
     - No Multihop access.
     - Stop leaking tags into IMDS.
-  - Hardened systemd service per app.
+  - Hardened systemd configuration.
     - Locked down enviroment variables for mysql credentials.
+    - App services run with non privileged user.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
