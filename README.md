@@ -54,6 +54,10 @@ IPAM Configuration:
       - Provisioned CIDRs:
         - `10.0.0.0/18`
 
+Notes:
+- Terraform state is local in this lab.
+  - Users should decide what they need for remote state.
+
 ## Begin Demo
 Build:
 - `terraform init`
