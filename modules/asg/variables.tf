@@ -29,6 +29,8 @@ variable "asg" {
     # uncomment lifecyle ignore changes for desired_capacity in the asg.
     desired_capacity = number
     instance_type    = string
+    # optional key pair name for use when troubleshooting instances via ssh from a bastion host
+    key_name = optional(string)
     # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
     instance_refresh          = optional(bool, true)
     health_check_grace_period = optional(number, 120)
