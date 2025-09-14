@@ -105,7 +105,7 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
   - Using `t2.micro` instance with encrypted root volumes.
   - Utilizing Mariadb as the MYSQL client.
-  - IMDSv2 confiuration in metadata_optinas
+  - Some IMDSv2 confiuration in metadata_optinas.
     - Stops SSRF/metadata theft via IMDSv1.
     - No Multihop access.
     - Stop leaking tags into IMDS.
