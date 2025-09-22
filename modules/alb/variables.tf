@@ -38,5 +38,10 @@ variable "alb" {
     condition     = var.alb.domain_name != var.alb.zone.name
     error_message = "There is no apex domain support at this time, use a subdomain of the zone for domain_name."
   }
+
+  validation {
+    condition     = strcontains(var.alb.domain_name, var.alb.zone.name)
+    error_message = "The domain name must contain the zone name."
+  }
 }
 
