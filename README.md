@@ -105,7 +105,8 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Add SSM to ASG instances to access secrets manager
+- Add SSM to ASG instances to access secrets manager and console login via AWS UI.
+- Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python (maybe).
 
 ## Components
 Application Load Balancer (ALB):
@@ -117,7 +118,7 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
   - Using `t2.micro` instance with encrypted root volumes.
   - Utilizing Mariadb as the MYSQL client.
-  - Some IMDSv2 confiuration in metadata_optinas.
+  - Some IMDSv2 confiuration in metadata options.
     - Stops SSRF/metadata theft via IMDSv1.
     - No Multihop access.
     - Stop leaking tags into IMDS.
