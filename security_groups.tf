@@ -1,7 +1,7 @@
 locals {
   # only for sg tags since modules tag env themselves
   # cant combine sg and sg rules in a module due to cycle errors when using source_security_group_id
-  # so keeping sg and sg rules separate for now
+  # so keeping sg and sg rules separate for now ref: https://github.com/JudeQuintana/cloud-infra-lab/pull/16
   default_sg_tags = merge({
     Environment = var.env_prefix
   })
