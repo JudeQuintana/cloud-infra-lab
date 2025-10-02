@@ -98,7 +98,7 @@ Health Check:
 - `https://cloud.some.domain/` -> `NGINX Health: OK: MaD GrEEtz! #End2EndBurner`
 
 RDS Connectivity Checks:
-- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (via RDS Proxy: false) or MySQL Primary ERROR`
+- `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (RDS Proxy: false) or MySQL Primary ERROR`
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
 
 ## Bug fixes

@@ -39,11 +39,11 @@ write_files:
       if [ $? -eq 0 ]; then
         printf 'HTTP/1.1 200 OK\r\n'
         printf 'Content-Type: text/plain\r\n\r\n'
-        printf 'App 1: MySQL Primary OK (via RDS Proxy: %s)\n' "$MYSQL_RDS_PROXY"
+        printf 'App 1: MySQL Primary OK (RDS Proxy: %s)\n' "$MYSQL_RDS_PROXY"
       else
         printf 'HTTP/1.1 503 Service Unavailable\r\n'
         printf 'Content-Type: text/plain\r\n\r\n'
-        printf 'App 1: MySQL Primary (via RDS Proxy: %s) ERROR:\n' "$MYSQL_RDS_PROXY"
+        printf 'App 1: MySQL Primary (RDS Proxy: %s) ERROR:\n' "$MYSQL_RDS_PROXY"
         printf '%s\n' "$ERROR_OUTPUT"
       fi
 
