@@ -3,14 +3,28 @@ data "aws_caller_identity" "this" {}
 
 locals {
   account_id = data.aws_caller_identity.this.account_id
+
   default_tags = merge({
     Environment = var.env_prefix
   }, var.tags)
-  name_fmt                     = "%s-%s"
-  name                         = format(local.name_fmt, var.env_prefix, var.asg.name)
-  launch_template_name_prefix  = format("%s-", local.name)
-  web_lt_and_asg_instance_name = format(local.name_fmt, local.name, "instance")
-  instance_refresh             = { for this in [var.asg.instance_refresh] : this => this if var.asg.instance_refresh }
+
+  name_fmt                    = "%s-%s"
+  name                        = format(local.name_fmt, var.env_prefix, var.asg.name)
+  launch_template_name_prefix = format("%s-", local.name)
+  # need map with Name here for merging later specifically for launch template (map of string) and asg (list of obj) tags
+  web_lt_and_asg_instance_name = { Name = format(local.name_fmt, local.name, "instance") }
+
+  # asg specific tags use a tag block instead of an attribute (usually a map)
+  # therefore it needs a slightly dfferent structure, will use list of object for dynamic_block
+  # this makes tagging asg resources unusual but still works dynamically
+  asg_tags = [
+    for key, value in merge(local.default_tags, local.web_lt_and_asg_instance_name) : {
+      key   = key
+      value = value
+    }
+  ]
+
+  instance_refresh = { for this in [var.asg.instance_refresh] : this => this if var.asg.instance_refresh }
 }
 
 resource "aws_launch_template" "this" {
@@ -48,9 +62,7 @@ resource "aws_launch_template" "this" {
 
     tags = merge(
       local.default_tags,
-      {
-        Name = local.web_lt_and_asg_instance_name
-      }
+      local.web_lt_and_asg_instance_name
     )
   }
 }
@@ -101,16 +113,14 @@ resource "aws_autoscaling_group" "this" {
     }
   }
 
-  tag {
-    key                 = "Name"
-    value               = local.web_lt_and_asg_instance_name
-    propagate_at_launch = true
-  }
+  dynamic "tag" {
+    for_each = local.asg_tags
 
-  tag {
-    key                 = "Environment"
-    value               = var.env_prefix
-    propagate_at_launch = true
+    content {
+      key                 = tag.value.key
+      value               = tag.value.value
+      propagate_at_launch = true
+    }
   }
 
   # will launch with initial desired_capacity value
