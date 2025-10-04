@@ -8,6 +8,7 @@ bootcmd:
 
 package_update: true
 packages:
+  - amazon-ssm-agent
   - mariadb105
   - nginx
   - socat
@@ -204,6 +205,7 @@ write_files:
 
 runcmd:
   - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, amazon-ssm-agent ]
   - [ systemctl, enable, --now, app1.service ]
   - [ systemctl, enable, --now, app2.service ]
   - [ systemctl, enable, --now, nginx ]
