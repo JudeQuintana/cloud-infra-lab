@@ -156,13 +156,13 @@ resource "aws_security_group_rule" "rds_ingress_tcp_3306_from_rds_proxy" {
 }
 
 # needed for rds to connect to other aws services
-resource "aws_security_group_rule" "rds_egress_all_to_any" {
+resource "aws_security_group_rule" "rds_egress_tcp_443_to_any" {
   security_group_id = aws_security_group.rds.id
   cidr_blocks       = ["0.0.0.0/0"]
   type              = "egress"
-  protocol          = "-1"
-  from_port         = 0
-  to_port           = 0
+  protocol          = "tcp"
+  from_port         = 443
+  to_port           = 443
 }
 
 ### RDS Proxy
