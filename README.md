@@ -32,7 +32,8 @@ With RDS PROXY (via toggle):
 
 ## Prerequisites
 AWS:
-- `aws` cli installed and configured with an AWS account.
+- `aws` cli installed and configured with an AWS account and install `session-manager-plugin` extension.
+  - `brew install aws session-manager-plugin`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
