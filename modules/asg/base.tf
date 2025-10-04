@@ -35,6 +35,10 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
 
+  iam_instance_profile {
+    name = aws_iam_instance_profile.this_ssm.name
+  }
+
   # IMDSv2 only: stops SSRF/metadata theft via IMDSv1.
   # Hop limit 1: no accidental container/proxy access to IMDS.
   metadata_options {

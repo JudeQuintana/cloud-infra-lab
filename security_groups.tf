@@ -10,6 +10,7 @@ locals {
   instance_sg_name  = format(local.sg_name_fmt, var.env_prefix, "instance")
   rds_sg_name       = format(local.sg_name_fmt, var.env_prefix, "rds")
   rds_proxy_sg_name = format(local.sg_name_fmt, var.env_prefix, "rds-proxy")
+  ssm_sg_name       = format(local.sg_name_fmt, var.env_prefix, "ssm")
 }
 
 ### ALB
@@ -114,6 +115,15 @@ resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds_proxy" {
   to_port                  = 3306
 }
 
+resource "aws_security_group_rule" "instance_egress_tcp_443_to_any" {
+  security_group_id        = aws_security_group.instance.id
+  source_security_group_id = aws_security_group.ssm.id
+  type                     = "egress"
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+}
+
 ### RDS MySQL
 resource "aws_security_group" "rds" {
   name   = local.rds_sg_name
@@ -187,3 +197,35 @@ resource "aws_security_group_rule" "rds_proxy_egress_tcp_3306_to_rds" {
   to_port                  = 3306
 }
 
+## SSM
+resource "aws_security_group" "ssm" {
+  name   = local.ssm_sg_name
+  vpc_id = local.app_vpc.id
+
+  tags = merge(
+    local.default_sg_tags,
+    {
+      Name = local.ssm_sg_name
+    }
+  )
+}
+
+# allow ingress from vpc to ssm endpoints
+resource "aws_security_group_rule" "ssm_ingress_tcp_443_from_instance" {
+  security_group_id        = aws_security_group.ssm.id
+  source_security_group_id = aws_security_group.instance.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+}
+
+# required for ssm endpoints to communicate with aws
+resource "aws_security_group_rule" "ssm_egress_tcp_443_to_any" {
+  security_group_id = aws_security_group.ssm.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  type              = "egress"
+  protocol          = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
