@@ -62,7 +62,6 @@ resource "aws_kms_key_policy" "this" {
   policy = data.aws_iam_policy_document.this_kms.json
 }
 
-
 ## SSM
 data "aws_iam_policy_document" "this_ssm_assume_role" {
   for_each = local.ssm
