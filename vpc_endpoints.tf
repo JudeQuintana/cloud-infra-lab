@@ -39,7 +39,7 @@ resource "aws_vpc_endpoint" "ssm" {
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy1"),
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy2")
   ]
-  security_group_ids  = [lookup(aws_security_group.ssm, local.ssm).id]
+  security_group_ids  = [lookup(aws_security_group.ssm, var.enable_ssm).id]
   private_dns_enabled = true
 
   tags = {
@@ -58,7 +58,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy1"),
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy2")
   ]
-  security_group_ids  = [lookup(aws_security_group.ssm, local.ssm).id]
+  security_group_ids  = [lookup(aws_security_group.ssm, var.enable_ssm).id]
   private_dns_enabled = true
 
   tags = {
@@ -77,7 +77,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy1"),
     lookup(each.value.private_subnet_name_to_subnet_id, "proxy2")
   ]
-  security_group_ids  = [lookup(aws_security_group.ssm, local.ssm).id]
+  security_group_ids  = [lookup(aws_security_group.ssm, var.enable_ssm).id]
   private_dns_enabled = true
 
   tags = {
