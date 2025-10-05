@@ -15,13 +15,15 @@ data "aws_ami" "al2023" {
 
 locals {
   # demonstrating pulling from secretsmanager
-  # should use readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
+  # should use separate writer and readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
   secretsmanager_mysql = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
 
   # should use ssm intsead of rendering passwords direct into user data but good enough for now
-  cloud_init = base64encode(templatefile(format("%s/templates/cloud_init.tftpl", path.module), merge(
-    local.secretsmanager_mysql,
-    { enable_rds_proxy = var.enable_rds_proxy }
+  cloud_init = base64encode(templatefile(
+    format("%s/templates/cloud_init.tftpl", path.module),
+    merge(
+      local.secretsmanager_mysql,
+      { rds_proxy = var.enable_rds_proxy }
   )))
 }
 
@@ -40,6 +42,7 @@ module "asg" {
     ami                = data.aws_ami.al2023
     instance_type      = "t2.micro"
     user_data          = local.cloud_init
+    ssm                = var.enable_ssm
     alb                = module.alb
     security_group_ids = [aws_security_group.instance.id]
     subnet_ids = [

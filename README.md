@@ -32,12 +32,13 @@ With RDS PROXY (via toggle):
 
 ## Prerequisites
 AWS:
-- `aws` cli installed and configured with an AWS account.
+- Install `aws` cli with `session-manager-plugin` extension and configured with an AWS account.
+  - `brew install aws session-manager-plugin`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
   - Must own the DNS zone via some domain registrar with the DNS servers pointed to the Route53 zone name servers.
-  - Demo will look up the zone resource by name.
+  - Demo will look up the AWS Route53 zone resource by name.
 - Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L21) to your own zone.
   - The `cloud.some.domain` DNS record will be created from the `var.zone_name` (ie. `var.zone_name = "jq1.io"` -> `output.url = "https://cloud.jq1.io"`)
   - Demo is not configured for an apex domain at this time.
@@ -69,7 +70,9 @@ Notes:
 ## Begin Demo
 Build:
 - `terraform init`
-  - To experiment with RDS Proxy change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+  - To experiment with:
+    - SSM: change `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+    - RDS Proxy: change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33).
 - `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
 - profit!
 
@@ -105,8 +108,8 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Add SSM to ASG instances to access secrets manager and console login via AWS UI.
-- Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python (maybe).
+- Confiure SSM Agent to pull rds creds directly from secrets manager instead of rendering them via cloud-init template.
+- Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
 Application Load Balancer (ALB):
@@ -131,13 +134,32 @@ Auto Scaling Group (ASG):
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
   - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
 - It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-- The boolean to auto deploy instance refresh is set to `true` by default.
+- The boolean to auto deploy instance refresh is set to `true` by default in the asg module.
   - It will use latest launch template version after the launch template is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
   - Only one instance refresh can be run at a time but will cancel any.
     in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web --region us-west-2`.
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
+- SSM
+  - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+  - Amazon Linux 2023 AMIs already come with amazon-ssm-agent installed and started so no need to add it to the cloud-init template.
+  - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
+  - VPC endpoints for SSM, EC2 messages and SSM messages.
+    - This is most of the cost will be for the SSM Interfaces per AZ (see infracost section below).
+    - No CloudWatch Logs VPC endpoint at this time.
+  - Check registered instances (get instance id):
+    - `aws ssm describe-instance-information --region us-west-2`
+  - Start ssm session with instance id instead of using ssh from bastion host:
+    - `aws ssm start-session --target i-07e941ffe289a2e2c --region us-west-2`
+  - Free features:
+    - SSM Agent itself (runs on EC2 at no cost).
+    - Session Manager (interactive shell & port forwarding).
+    - Run Command (ad-hoc commands/scripts).
+    - State Manager (lightweight config mgmt).
+    - Inventory (collecting OS/software metadata).
+    - Patch Manager (scheduling OS patches).
+    - Parameter Store – Standard parameters (basic string storage).
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -156,7 +178,7 @@ Amazon RDS (MySQL):
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
-  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
+  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
   - Module Implemention:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
@@ -260,12 +282,17 @@ Project: main
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
 ```
 
+- With SSM (via toggle)
+  - SSM core features: $0.00
+  - VPC Interface Endpoints for SSM: 3 SSM Endpoints (required) × 2 AZs × $0.01 × 730h ≈ $43.80.
+  - Result: $96 + $44 = $140
+
 - With RDS Proxy (via toggle):
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
     - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
     - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
-  - Result: $96 (default monthly cost) + $22 (rds proxy monthly cost) = roughly $118 a month to run Cloud Infra Demo with RDS Proxy
+  - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (rds proxy monthly cost) = $162 a month (roughly).
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:

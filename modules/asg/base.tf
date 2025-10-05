@@ -25,6 +25,7 @@ locals {
   ]
 
   instance_refresh = { for this in [var.asg.instance_refresh] : this => this if var.asg.instance_refresh }
+  ssm              = { for this in [var.asg.ssm] : this => this if var.asg.ssm }
 }
 
 resource "aws_launch_template" "this" {
@@ -34,6 +35,14 @@ resource "aws_launch_template" "this" {
   instance_type          = var.asg.instance_type
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
+
+  dynamic "iam_instance_profile" {
+    for_each = local.ssm
+
+    content {
+      name = lookup(aws_iam_instance_profile.this_ssm, iam_instance_profile.key).name
+    }
+  }
 
   # IMDSv2 only: stops SSRF/metadata theft via IMDSv1.
   # Hop limit 1: no accidental container/proxy access to IMDS.
@@ -108,7 +117,9 @@ resource "aws_autoscaling_group" "this" {
       strategy = "Rolling"
       preferences {
         min_healthy_percentage = 100
-        instance_warmup        = 300
+        # adjust increase/decrease for quicker or slower scaling up time
+        # 3 min
+        instance_warmup = 180
       }
     }
   }

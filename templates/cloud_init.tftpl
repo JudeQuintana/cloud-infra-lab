@@ -25,7 +25,7 @@ write_files:
       MYSQL_PASSWORD='${password}'
       MYSQL_DB_NAME='${db_name}'
       MYSQL_TIMEOUT='${timeout}'
-      MYSQL_RDS_PROXY='${enable_rds_proxy}'
+      MYSQL_RDS_PROXY='${rds_proxy}'
 
   # --- Handlers ---
   - path: /usr/local/bin/app1_handler.sh

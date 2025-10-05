@@ -21,8 +21,14 @@ variable "zone_name" {
   default     = "jq1.io"
 }
 
+variable "enable_ssm" {
+  description = "Toggle for enabling SSM dependencies for ASG Instances when needed."
+  type        = bool
+  default     = false
+}
+
 variable "enable_rds_proxy" {
-  description = "Toggle for enabling RDS Proxy when needed"
+  description = "Toggle for enabling RDS Proxy when needed."
   type        = bool
   default     = false
 }

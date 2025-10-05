@@ -6,3 +6,7 @@ output "instance_refresh" {
   value = var.asg.instance_refresh
 }
 
+output "ssm" {
+  value = var.asg.ssm
+}
+
