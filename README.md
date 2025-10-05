@@ -290,7 +290,7 @@ Project: main
     - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
     - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
-  - Result: $96 (default monthly cost) + $22 (rds proxy monthly cost) = roughly $118 a month to run Cloud Infra Demo with RDS Proxy
+  - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (rds proxy monthly cost) = $162 a month (roughly).
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:
