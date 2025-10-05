@@ -32,7 +32,7 @@ With RDS PROXY (via toggle):
 
 ## Prerequisites
 AWS:
-- `aws` cli with `session-manager-plugin` extension installed and configured with an AWS account.
+- Install `aws` cli with `session-manager-plugin` extension and configured with an AWS account.
   - `brew install aws session-manager-plugin`
 
 Zone and Domain:
