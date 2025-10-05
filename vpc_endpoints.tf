@@ -24,7 +24,7 @@ locals {
   vpcs_with_private_subnet_ids_for_ssm = {
     for this in module.vpcs :
     this.name => this
-    if length(this.private_subnet_name_to_subnet_id) > 0 && var.enable_ssm
+    if var.enable_ssm && length(this.private_subnet_name_to_subnet_id) > 0
   }
 }
 
