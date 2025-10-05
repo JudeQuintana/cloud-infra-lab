@@ -77,9 +77,16 @@ resource "aws_security_group_rule" "instance_ingress_tcp_80_from_alb" {
 }
 
 # needed to access s3 endpoints in us-west-2 region according to https://ip-ranges.amazonaws.com/ip-ranges.json
+# curl -S https://ip-ranges.amazonaws.com/ip-ranges.json  | jq '.prefixes[] | select(.region == "us-west-2" and .service == "S3")'
 resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_west_2" {
   security_group_id = aws_security_group.instance.id
   cidr_blocks = [
+    "16.12.96.0/21",
+    "16.12.104.0/21",
+    "16.12.88.0/21",
+    "16.12.112.0/21",
+    "1.178.65.0/24",
+    "1.178.9.0/24",
     "3.5.76.0/22",
     "18.34.244.0/22",
     "18.34.48.0/20",
