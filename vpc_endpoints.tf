@@ -16,7 +16,7 @@ resource "aws_vpc_endpoint" "s3" {
   route_table_ids   = each.value.private_route_table_ids
 
   tags = {
-    Name = format("%s-s3-gateway", each.value.full_name)
+    Name = format("%s-s3-endpoint", each.value.full_name)
   }
 }
 
