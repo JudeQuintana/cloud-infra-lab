@@ -19,12 +19,14 @@ locals {
   secretsmanager_mysql = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
 
   # should use ssm intsead of rendering passwords direct into user data but good enough for now
-  cloud_init = base64encode(templatefile(format("%s/templates/cloud_init.tftpl", path.module), merge(
-    local.secretsmanager_mysql,
-    {
-      ssm       = var.enable_ssm
-      rds_proxy = var.enable_rds_proxy
-    }
+  cloud_init = base64encode(templatefile(
+    format("%s/templates/cloud_init.tftpl", path.module),
+    merge(
+      local.secretsmanager_mysql,
+      {
+        ssm       = var.enable_ssm
+        rds_proxy = var.enable_rds_proxy
+      }
   )))
 }
 
