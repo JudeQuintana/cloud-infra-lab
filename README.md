@@ -108,6 +108,7 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
+- Confiure SSM Agent to pull rds creds directly from secrets manager instead of rendering them via cloud-init template.
 - Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
