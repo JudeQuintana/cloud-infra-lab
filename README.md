@@ -283,7 +283,7 @@ Project: main
 - With SSM (via toggle)
   - SSM core features: $0.00
   - VPC Interface Endpoints for SSM: 3 SSM Endpoints (required) × 2 AZs × $0.01 × 730h ≈ $43.80.
-  - $96 + $44 = $140
+  - Result: $96 + $44 = $140
 
 - With RDS Proxy (via toggle):
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
