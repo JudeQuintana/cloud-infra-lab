@@ -36,7 +36,6 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = var.asg.security_group_ids
   user_data              = var.asg.user_data
 
-
   dynamic "iam_instance_profile" {
     for_each = local.ssm
 

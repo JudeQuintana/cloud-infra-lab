@@ -21,7 +21,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 locals {
-  vpcs_with_private_subnet_ids = {
+  vpcs_with_private_subnet_ids_for_ssm = {
     for this in module.vpcs :
     this.name => this
     if length(this.private_subnet_name_to_subnet_id) > 0 && var.enable_ssm
@@ -30,7 +30,7 @@ locals {
 
 # Systems Manager endpoint
 resource "aws_vpc_endpoint" "ssm" {
-  for_each = local.vpcs_with_private_subnet_ids
+  for_each = local.vpcs_with_private_subnet_ids_for_ssm
 
   vpc_id            = each.value.id
   service_name      = format("com.amazonaws.%s.ssm", each.value.region)
@@ -49,7 +49,7 @@ resource "aws_vpc_endpoint" "ssm" {
 
 # EC2 messages endpoint
 resource "aws_vpc_endpoint" "ec2messages" {
-  for_each = local.vpcs_with_private_subnet_ids
+  for_each = local.vpcs_with_private_subnet_ids_for_ssm
 
   vpc_id            = each.value.id
   service_name      = format("com.amazonaws.%s.ec2messages", each.value.region)
@@ -68,7 +68,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
 
 # SSM messages endpoint
 resource "aws_vpc_endpoint" "ssmmessages" {
-  for_each = local.vpcs_with_private_subnet_ids
+  for_each = local.vpcs_with_private_subnet_ids_for_ssm
 
   vpc_id            = each.value.id
   service_name      = format("com.amazonaws.%s.ssmmessages", each.value.region)
