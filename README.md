@@ -142,6 +142,7 @@ Auto Scaling Group (ASG):
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
 - SSM
   - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+  - Amazon Linux 2023 AMIs already come with amazon-ssm-agent installed and started so no need to add it to the cloud-init template.
   - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
   - VPC endpoints for SSM, EC2 messages and SSM messages.
     - This is most of the cost will be for the SSM Interfaces per AZ (see infracost section below).
