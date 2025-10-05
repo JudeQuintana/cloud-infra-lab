@@ -22,7 +22,7 @@ variable "zone_name" {
 }
 
 variable "enable_ssm" {
-  description = "Toggle for enabling SSM for ASG Instances when needed."
+  description = "Toggle for enabling SSM dependencies for ASG Instances when needed."
   type        = bool
   default     = false
 }

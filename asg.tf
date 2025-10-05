@@ -23,10 +23,7 @@ locals {
     format("%s/templates/cloud_init.tftpl", path.module),
     merge(
       local.secretsmanager_mysql,
-      {
-        ssm       = var.enable_ssm
-        rds_proxy = var.enable_rds_proxy
-      }
+      { rds_proxy = var.enable_rds_proxy }
   )))
 }
 
