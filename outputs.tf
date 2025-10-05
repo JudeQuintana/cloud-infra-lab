@@ -24,7 +24,7 @@ output "asg_instance_refresh_enabled" {
 }
 
 output "ssm_enabled" {
-  value = var.enable_ssm
+  value = module.asg.ssm
 }
 
 output "rds_proxy_enabled" {
