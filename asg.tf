@@ -15,7 +15,7 @@ data "aws_ami" "al2023" {
 
 locals {
   # demonstrating pulling from secretsmanager
-  # should use readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
+  # should use separate writer and readonly creds instead of using admin creds to access the primary and read replica db's but used here for demo purposes
   secretsmanager_mysql = jsondecode(aws_secretsmanager_secret_version.rds.secret_string)
 
   # should use ssm intsead of rendering passwords direct into user data but good enough for now
