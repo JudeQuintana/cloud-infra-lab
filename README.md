@@ -140,14 +140,24 @@ Auto Scaling Group (ASG):
     in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web --region us-west-2`.
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
-- SSM configured out of the box.
+- SSM
   - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
   - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
-  - VPC endpoint interfaces for SSM, EC2 messages and SSM messages.
+  - VPC endpoints for SSM, EC2 messages and SSM messages.
+    - This is most of the cost will be for the SSM Interfaces per AZ (see infracost section below).
+    - No CloudWatch Logs VPC endpoint at this time.
   - Check registered instances (get instance id):
     - `aws ssm describe-instance-information --region us-west-2`
   - Start ssm session with instance id instead of using ssh from bastion host:
     - `aws ssm start-session --target i-07e941ffe289a2e2c --region us-west-2`
+  - Free features:
+    - SSM Agent itself (runs on EC2 at no cost).
+    - Session Manager (interactive shell & port forwarding).
+    - Run Command (ad-hoc commands/scripts).
+    - State Manager (lightweight config mgmt).
+    - Inventory (collecting OS/software metadata).
+    - Patch Manager (scheduling OS patches).
+    - Parameter Store – Standard parameters (basic string storage).
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -269,6 +279,7 @@ Project: main
 ┃ main                                               ┃           $96 ┃           - ┃        $96 ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
 ```
+
 - With SSM (via toggle)
   - SSM core features: $0.00
   - VPC Interface Endpoints for SSM: 3 SSM Endpoints (required) × 2 AZs × $0.01 × 730h ≈ $43.80.
