@@ -70,7 +70,9 @@ Notes:
 ## Begin Demo
 Build:
 - `terraform init`
-  - To experiment with RDS Proxy change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+  - To experiment with:
+    - SSM: change `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+    - RDS Proxy: change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33).
 - `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
 - profit!
 
@@ -106,8 +108,7 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Add SSM to ASG instances to access secrets manager and console login via AWS UI.
-- Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python (maybe).
+- Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
 Application Load Balancer (ALB):
@@ -139,6 +140,14 @@ Auto Scaling Group (ASG):
     in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web --region us-west-2`.
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
+- SSM configured out of the box.
+  - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+  - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
+  - VPC endpoint interfaces for SSM, EC2 messages and SSM messages.
+  - Check registered instances (get instance id):
+    - `aws ssm describe-instance-information --region us-west-2`
+  - Start ssm session with instance id instead of using ssh from bastion host:
+    - `aws ssm start-session --target i-07e941ffe289a2e2c --region us-west-2`
 
 NGINX reverse proxy + Socat Health Checks:
 - Path-based routing: /app1, /app2.
@@ -157,7 +166,7 @@ Amazon RDS (MySQL):
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
-  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27) boolean value (default is `false`).
+  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
   - Module Implemention:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
@@ -260,6 +269,10 @@ Project: main
 ┃ main                                               ┃           $96 ┃           - ┃        $96 ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
 ```
+- With SSM (via toggle)
+  - SSM core features: $0.00
+  - VPC Interface Endpoints for SSM: 3 SSM Endpoints (required) × 2 AZs × $0.01 × 730h ≈ $43.80.
+  - $96 + $44 = $140
 
 - With RDS Proxy (via toggle):
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).

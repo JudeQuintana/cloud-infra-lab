@@ -8,10 +8,12 @@ bootcmd:
 
 package_update: true
 packages:
-  - amazon-ssm-agent
   - mariadb105
   - nginx
   - socat
+%{ if ssm }
+  - amazon-ssm-agent
+%{ endif }
 
 write_files:
   # --- Centralized env file (read-only for root) ---
@@ -26,7 +28,7 @@ write_files:
       MYSQL_PASSWORD='${password}'
       MYSQL_DB_NAME='${db_name}'
       MYSQL_TIMEOUT='${timeout}'
-      MYSQL_RDS_PROXY='${enable_rds_proxy}'
+      MYSQL_RDS_PROXY='${rds_proxy}'
 
   # --- Handlers ---
   - path: /usr/local/bin/app1_handler.sh
@@ -198,15 +200,17 @@ write_files:
           }
 
           location / {
-            return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner";
+            return 200 "NGINX Health: OK: MaD GrEEtz! #End2EndBurner #v2";
           }
         }
       }
 
 runcmd:
   - [ systemctl, daemon-reload ]
-  - [ systemctl, enable, --now, amazon-ssm-agent ]
   - [ systemctl, enable, --now, app1.service ]
   - [ systemctl, enable, --now, app2.service ]
   - [ systemctl, enable, --now, nginx ]
+%{ if ssm }
+  - [ systemctl, enable, --now, amazon-ssm-agent ]
+%{ endif }
 

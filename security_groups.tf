@@ -11,6 +11,7 @@ locals {
   rds_sg_name       = format(local.sg_name_fmt, var.env_prefix, "rds")
   rds_proxy_sg_name = format(local.sg_name_fmt, var.env_prefix, "rds-proxy")
   ssm_sg_name       = format(local.sg_name_fmt, var.env_prefix, "ssm")
+  ssm               = { for this in [var.enable_ssm] : this => this if var.enable_ssm }
 }
 
 ### ALB
@@ -106,9 +107,12 @@ resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds" {
 }
 
 # egress for instance connections to rds proxy
+# use toggle
 resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds_proxy" {
+  for_each = local.rds_proxy
+
   security_group_id        = aws_security_group.instance.id
-  source_security_group_id = aws_security_group.rds_proxy.id
+  source_security_group_id = lookup(aws_security_group.rds_proxy, each.key).id
   type                     = "egress"
   protocol                 = "tcp"
   from_port                = 3306
@@ -116,8 +120,10 @@ resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds_proxy" {
 }
 
 resource "aws_security_group_rule" "instance_egress_tcp_443_to_any" {
+  for_each = local.ssm
+
   security_group_id        = aws_security_group.instance.id
-  source_security_group_id = aws_security_group.ssm.id
+  source_security_group_id = lookup(aws_security_group.ssm, each.key).id
   type                     = "egress"
   protocol                 = "tcp"
   from_port                = 443
@@ -147,8 +153,10 @@ resource "aws_security_group_rule" "rds_ingress_tcp_3306_from_instance" {
 }
 
 resource "aws_security_group_rule" "rds_ingress_tcp_3306_from_rds_proxy" {
+  for_each = local.rds_proxy
+
   security_group_id        = aws_security_group.rds.id
-  source_security_group_id = aws_security_group.rds_proxy.id
+  source_security_group_id = lookup(aws_security_group.rds_proxy, each.key).id
   protocol                 = "tcp"
   type                     = "ingress"
   from_port                = 3306
@@ -166,7 +174,10 @@ resource "aws_security_group_rule" "rds_egress_tcp_443_to_any" {
 }
 
 ### RDS Proxy
+# use toggle
 resource "aws_security_group" "rds_proxy" {
+  for_each = local.rds_proxy
+
   name   = local.rds_proxy_sg_name
   vpc_id = local.app_vpc.id
 
@@ -180,7 +191,9 @@ resource "aws_security_group" "rds_proxy" {
 
 # required for RDS Instances behind RDS proxy
 resource "aws_security_group_rule" "rds_proxy_ingress_tcp_3306_from_instance" {
-  security_group_id        = aws_security_group.rds_proxy.id
+  for_each = local.rds_proxy
+
+  security_group_id        = lookup(aws_security_group.rds_proxy, each.key).id
   source_security_group_id = aws_security_group.instance.id
   type                     = "ingress"
   protocol                 = "tcp"
@@ -189,7 +202,9 @@ resource "aws_security_group_rule" "rds_proxy_ingress_tcp_3306_from_instance" {
 }
 
 resource "aws_security_group_rule" "rds_proxy_egress_tcp_3306_to_rds" {
-  security_group_id        = aws_security_group.rds_proxy.id
+  for_each = local.rds_proxy
+
+  security_group_id        = lookup(aws_security_group.rds_proxy, each.key).id
   source_security_group_id = aws_security_group.rds.id
   type                     = "egress"
   protocol                 = "tcp"
@@ -198,7 +213,10 @@ resource "aws_security_group_rule" "rds_proxy_egress_tcp_3306_to_rds" {
 }
 
 ## SSM
+# use toggle
 resource "aws_security_group" "ssm" {
+  for_each = local.ssm
+
   name   = local.ssm_sg_name
   vpc_id = local.app_vpc.id
 
@@ -212,7 +230,9 @@ resource "aws_security_group" "ssm" {
 
 # allow ingress from vpc to ssm endpoints
 resource "aws_security_group_rule" "ssm_ingress_tcp_443_from_instance" {
-  security_group_id        = aws_security_group.ssm.id
+  for_each = local.ssm
+
+  security_group_id        = lookup(aws_security_group.ssm, each.key).id
   source_security_group_id = aws_security_group.instance.id
   type                     = "ingress"
   protocol                 = "tcp"
@@ -222,7 +242,9 @@ resource "aws_security_group_rule" "ssm_ingress_tcp_443_from_instance" {
 
 # required for ssm endpoints to communicate with aws
 resource "aws_security_group_rule" "ssm_egress_tcp_443_to_any" {
-  security_group_id = aws_security_group.ssm.id
+  for_each = local.ssm
+
+  security_group_id = lookup(aws_security_group.ssm, each.key).id
   cidr_blocks       = ["0.0.0.0/0"]
   type              = "egress"
   protocol          = "tcp"

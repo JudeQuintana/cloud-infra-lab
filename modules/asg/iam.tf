@@ -1,6 +1,6 @@
+# KMS CMK
 # both AllowServiceLinkedRoleUseOfCMK and AllowAttachmentOfPersistentResources statements are required
 # to allow EC2/Auto Scaling use the CMK to encrypt root volumes
-
 data "aws_iam_policy_document" "this_kms" {
   statement {
     sid       = "EnableIAMUserPermissions"
@@ -65,6 +65,8 @@ resource "aws_kms_key_policy" "this" {
 
 ## SSM
 data "aws_iam_policy_document" "this_ssm_assume_role" {
+  for_each = local.ssm
+
   statement {
     sid     = "SSMAssumeRole"
     effect  = "Allow"
@@ -84,17 +86,23 @@ locals {
 }
 
 resource "aws_iam_role" "this_ssm" {
+  for_each = local.ssm
+
   name               = local.ssm_iam_name
-  assume_role_policy = data.aws_iam_policy_document.this_ssm_assume_role.json
+  assume_role_policy = lookup(data.aws_iam_policy_document.this_ssm_assume_role, each.key).json
 }
 
 resource "aws_iam_role_policy_attachment" "this_ssm_core" {
-  role       = aws_iam_role.this_ssm.name
+  for_each = local.ssm
+
+  role       = lookup(aws_iam_role.this_ssm, each.key).name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "this_ssm" {
+  for_each = local.ssm
+
   name = local.ssm_iam_name
-  role = aws_iam_role.this_ssm.name
+  role = lookup(aws_iam_role.this_ssm, each.key).name
 }
 

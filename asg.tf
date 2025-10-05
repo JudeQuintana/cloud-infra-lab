@@ -21,7 +21,10 @@ locals {
   # should use ssm intsead of rendering passwords direct into user data but good enough for now
   cloud_init = base64encode(templatefile(format("%s/templates/cloud_init.tftpl", path.module), merge(
     local.secretsmanager_mysql,
-    { enable_rds_proxy = var.enable_rds_proxy }
+    {
+      ssm       = var.enable_ssm
+      rds_proxy = var.enable_rds_proxy
+    }
   )))
 }
 
@@ -40,6 +43,7 @@ module "asg" {
     ami                = data.aws_ami.al2023
     instance_type      = "t2.micro"
     user_data          = local.cloud_init
+    ssm                = var.enable_ssm
     alb                = module.alb
     security_group_ids = [aws_security_group.instance.id]
     subnet_ids = [

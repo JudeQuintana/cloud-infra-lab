@@ -23,6 +23,10 @@ output "asg_instance_refresh_enabled" {
   value = module.asg.instance_refresh
 }
 
+output "ssm_enabled" {
+  value = var.enable_ssm
+}
+
 output "rds_proxy_enabled" {
   value = var.enable_rds_proxy
 }
