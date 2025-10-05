@@ -32,13 +32,13 @@ With RDS PROXY (via toggle):
 
 ## Prerequisites
 AWS:
-- `aws` cli installed and configured with an AWS account and install `session-manager-plugin` extension.
+- `aws` cli with `session-manager-plugin` extension installed and configured with an AWS account.
   - `brew install aws session-manager-plugin`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
   - Must own the DNS zone via some domain registrar with the DNS servers pointed to the Route53 zone name servers.
-  - Demo will look up the zone resource by name.
+  - Demo will look up the AWS Route53 zone resource by name.
 - Change the `zone_name` variable in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L21) to your own zone.
   - The `cloud.some.domain` DNS record will be created from the `var.zone_name` (ie. `var.zone_name = "jq1.io"` -> `output.url = "https://cloud.jq1.io"`)
   - Demo is not configured for an apex domain at this time.
