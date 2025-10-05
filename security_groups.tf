@@ -106,12 +106,9 @@ resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds" {
 }
 
 # egress for instance connections to rds proxy
-# use toggle
 resource "aws_security_group_rule" "instance_egress_tcp_3306_to_rds_proxy" {
-  for_each = local.rds_proxy
-
   security_group_id        = aws_security_group.instance.id
-  source_security_group_id = lookup(aws_security_group.rds_proxy, each.key).id
+  source_security_group_id = aws_security_group.rds_proxy.id
   type                     = "egress"
   protocol                 = "tcp"
   from_port                = 3306
@@ -169,7 +166,6 @@ resource "aws_security_group_rule" "rds_egress_tcp_443_to_any" {
 }
 
 ### RDS Proxy
-# use toggle
 resource "aws_security_group" "rds_proxy" {
   name   = local.rds_proxy_sg_name
   vpc_id = local.app_vpc.id
@@ -202,7 +198,6 @@ resource "aws_security_group_rule" "rds_proxy_egress_tcp_3306_to_rds" {
 }
 
 ## SSM
-# use toggle
 resource "aws_security_group" "ssm" {
   name   = local.ssm_sg_name
   vpc_id = local.app_vpc.id
