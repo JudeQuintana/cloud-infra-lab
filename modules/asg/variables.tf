@@ -31,7 +31,8 @@ variable "asg" {
     instance_type    = string
     # optional key pair name for use when troubleshooting instances via ssh from a bastion host
     key_name = optional(string)
-    ssm      = optional(bool, false)
+    # toggle SSM dependencies
+    ssm = optional(bool, false)
     # start a launch-before-terminate asg instance refresh using the latest launch template automatically after the launch template is modified
     instance_refresh          = optional(bool, true)
     health_check_grace_period = optional(number, 120)
