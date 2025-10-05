@@ -40,7 +40,7 @@ resource "aws_launch_template" "this" {
     for_each = local.ssm
 
     content {
-      name = lookup(aws_iam_instance_profile.this_ssm, each.key).name
+      name = lookup(aws_iam_instance_profile.this_ssm, iam_instance_profile.key).name
     }
   }
 
