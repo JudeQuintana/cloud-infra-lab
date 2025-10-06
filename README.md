@@ -90,7 +90,7 @@ Tear Down:
   - `aws rds modify-db-instance --db-instance-identifier test-app-primary --no-deletion-protection --apply-immediately --region us-west-2`
 - Destroy resources:
   - `terraform destroy`
-  - note: vpcs will take 10-15min to destroy due to IPAM taking a long time to release the IP.
+  - note: VPCs will take 10-15min to destroy due to IPAM taking a long time to release the IP.
 - Force delete the Secrets Manager path instead of waiting for scheduled deletion:
   - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
 - Delete snapshot that was created when destroying the DB.
@@ -108,7 +108,7 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Confiure SSM Agent to pull RDS creds directly from Secrets Manager instead of rendering them via cloud-init template.
+- Configure SSM Agent to pull RDS creds directly from Secrets Manager instead of rendering them via cloud-init template.
 - Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
@@ -121,12 +121,12 @@ Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
   - Using `t2.micro` instance with encrypted root volumes.
   - Utilizing MariaDB as the MYSQL client.
-  - Some IMDSv2 confiuration in metadata options.
+  - Some IMDSv2 config in metadata options.
     - Stop SSRF/metadata theft via IMDSv1.
     - No Multihop access.
     - Stop leaking tags into IMDS.
   - Hardened systemd configuration.
-    - Locked down enviroment variables for MYSQL credentials.
+    - Locked down environment variables for MYSQL credentials.
     - App services run with non privileged user.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
@@ -169,21 +169,21 @@ NGINX reverse proxy + Socat Health Checks:
 - Lightweight bash scripts to simulate apps.
 - mysql -e "SELECT 1" run with credentials pulled from Secrets Manager.
 
-Amazon RDS (MySQL):
+Amazon RDS (MYSQL):
 - Primary DB Instance with Multi-AZ and encryption via KMS.
 - Read Replica DB Instance (Intra-region and Multi-AZ).
 - Access controlled by SGs (only from ASG instances to RDS Proxy, and ASG instances to RDS directly).
-- Secrets (MySQL creds) stored in AWS Secrets Manager.
+- Secrets (MYSQL credentials) stored in AWS Secrets Manager.
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
   - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
-  - Module Implemention:
+  - Module Implementation:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
     - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
     - Access to the read replica bypasses the RDS Proxy, always directly connected.
-      - RDS proxy doesnt support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica access bypasses the RDS proxy with no db pooling and failover benefits.
+      - RDS proxy doesn't support read only endpoints for DB instances (cheap HA), only RDS clusters (more expensive) and therefore read replica access bypasses the RDS proxy with no db pooling and failover benefits.
 
 Security Groups:
 - Fine-grained rules for ALB ↔ EC2 ↔ RDS.
@@ -293,32 +293,32 @@ Project: main
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
   - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (RDS Proxy monthly cost) = $162 a month (roughly).
 
-## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
+## ✅ Pros and ❌ Cons of using a reverse proxy to access MYSQL (according to ChatGPT)
 Advantages:
 - Horizontal scalability.
   - ASG lets you scale NGINX nodes based on CPU, connections, etc.
 - Managed ingress.
   - ALB handles TLS termination, health checks, and routing to NGINX instances cleanly.
 - Separation of concerns.
-  - NGINX handles HTTP logic (e.g., authentication, load balancing), MySQL stays private.
+  - NGINX handles HTTP logic (e.g., authentication, load balancing), MYSQL stays private.
 - Custom routing logic.
   - You can implement advanced logic like conditional proxying, auth, throttling, etc.
 - Can front many apps.
-  - One NGINX can proxy to multiple backends, including MySQL-checking microservices.
+  - One NGINX can proxy to multiple backends, including MYSQL-checking microservices.
 
 Limitations:
-- NGINX is not a MySQL proxy.
-  - NGINX is built for HTTP, not stateful MySQL TCP connections.
-  - You cannot proxy raw MySQL traffic through NGINX.
+- NGINX is not a MYSQL proxy.
+  - NGINX is built for HTTP, not stateful MYSQL TCP connections.
+  - You cannot proxy raw MYSQL traffic through NGINX.
 - Unnecessary complexity.
-  - If just connecting to MySQL from backend apps, NGINX is likely overkill.
+  - If just connecting to MYSQL from backend apps, NGINX is likely overkill.
 - Extra latency.
-  - Adds a hop: ALB → NGINX → app → MySQL.
+  - Adds a hop: ALB → NGINX → app → MYSQL.
   - This could slightly slow down reads/writes if not designed carefully.
 - Scaling not tied to DB load
-  - Scaling NGINX does not help with MySQL bottlenecks unless your NGINX is doing significant compute (auth, caching, etc.).
+  - Scaling NGINX does not help with MYSQL bottlenecks unless your NGINX is doing significant compute (auth, caching, etc.).
 - Maintains state poorly.
-  - MySQL connections are long-lived and stateful, not ideal for stateless NGINX workers.
-- Not resilient to MySQL issues.
-  - If MySQL becomes slow/unavailable, NGINX becomes a bottleneck or fails with 5xx unless you explicitly handle those errors.
+  - MYSQL connections are long-lived and stateful, not ideal for stateless NGINX workers.
+- Not resilient to MYSQL issues.
+  - If MYSQL becomes slow/unavailable, NGINX becomes a bottleneck or fails with 5xx unless you explicitly handle those errors.
 
