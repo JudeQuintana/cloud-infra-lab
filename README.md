@@ -27,13 +27,13 @@ Enjoy!
 Without RDS Proxy (default):
 ![cloud-infra-lab-without-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-without-rds-proxy.png)
 
-With RDS PROXY (via toggle):
+With RDS Proxy (via toggle):
 ![cloud-infra-lab-with-rds-proxy](https://jq1-io.s3.us-east-1.amazonaws.com/projects/cloud-infra-lab-with-rds-proxy.png)
 
 ## Prerequisites
 AWS:
 - Install `aws` cli with `session-manager-plugin` extension and configured with an AWS account.
-  - `brew install aws session-manager-plugin`
+  - `brew install awscli session-manager-plugin`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
@@ -49,7 +49,7 @@ IPAM Configuration:
   - The demo will look up the IPAM pools via filter on description and ipv4 type.
 - Advanced Tier IPAM in `us-west-2` operating regions.
   - No IPv4 regional pools at the moment.
-  - `us-west-2` (ipam locale)
+  - `us-west-2` (IPAM locale)
     - IPv4 Pool (private scope)
       - Description: `ipv4-test-usw2`
       - Provisioned CIDRs:
@@ -73,12 +73,13 @@ Build:
   - To experiment with:
     - SSM: change `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
     - RDS Proxy: change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33).
-- `terraform apply` (takes a few minutes for asg instances to finish spinning up once apply is complete)
+- `terraform apply`
+  - It takes a few minutes for ASG instances to finish spinning up once apply is complete.
 - profit!
 
 Caveats:
-- With RDS PROXY:
-  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because the RDS proxy default target group is still becoming "Available".
+- With RDS Proxy:
+  - If you're getting the following error for `/app1` when RDS Proxy is enabled it's because the RDS Proxy default target group is still becoming "Available".
     - It will eventually come online by itself after 3-5min+.
 ```
 ERROR 2013 (HY000): Lost connection to MySQL server at 'handshake: reading initial communication packet', system error: 11
@@ -89,9 +90,8 @@ Tear Down:
   - `aws rds modify-db-instance --db-instance-identifier test-app-primary --no-deletion-protection --apply-immediately --region us-west-2`
 - Destroy resources:
   - `terraform destroy`
-  - note: vpcs will take 10-15min to destroy due to IPAM taking a long
-    time to release the IP.
-- Force delete the secrets manager path instead of waiting for scheduled deletion:
+  - note: vpcs will take 10-15min to destroy due to IPAM taking a long time to release the IP.
+- Force delete the Secrets Manager path instead of waiting for scheduled deletion:
   - `aws secretsmanager delete-secret --region us-west-2 --secret-id rds/test/mysql/app --force-delete-without-recovery --region us-west-2`
 - Delete snapshot that was created when destroying the DB.
   - `aws rds delete-db-snapshot --db-snapshot-identifier test-app-primary-final-snapshot --region us-west-2`
@@ -108,7 +108,7 @@ RDS Connectivity Checks:
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
-- Confiure SSM Agent to pull rds creds directly from secrets manager instead of rendering them via cloud-init template.
+- Confiure SSM Agent to pull RDS creds directly from Secrets Manager instead of rendering them via cloud-init template.
 - Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
@@ -120,21 +120,21 @@ Application Load Balancer (ALB):
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
   - Using `t2.micro` instance with encrypted root volumes.
-  - Utilizing Mariadb as the MYSQL client.
+  - Utilizing MariaDB as the MYSQL client.
   - Some IMDSv2 confiuration in metadata options.
-    - Stops SSRF/metadata theft via IMDSv1.
+    - Stop SSRF/metadata theft via IMDSv1.
     - No Multihop access.
     - Stop leaking tags into IMDS.
   - Hardened systemd configuration.
-    - Locked down enviroment variables for mysql credentials.
+    - Locked down enviroment variables for MYSQL credentials.
     - App services run with non privileged user.
 - Scales based on CPU utilization.
 - Deployed across multiple AZs.
 - Instances can spin up without a NATGW because there's an S3 gateway.
   - This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
-  - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per Az) and you'll need to add an egress security group rule to the instances security group.
-- It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-- The boolean to auto deploy instance refresh is set to `true` by default in the asg module.
+  - If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set `natgw = true` (on public subnet per AZ) and you'll need to add an egress security group rule to the instances security group.
+- It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the ASG terminate unneeded instance capacity down back to 2.
+- The boolean to auto deploy instance refresh is set to `true` by default in the ASG module.
   - It will use latest launch template version after the launch template is modified.
   - The config prioritizes availability (launch before terminate) over cost control (terminate before launch).
   - Only one instance refresh can be run at a time but will cancel any.
@@ -143,14 +143,14 @@ Auto Scaling Group (ASG):
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
 - SSM
   - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
-  - Amazon Linux 2023 AMIs already come with amazon-ssm-agent installed and started so no need to add it to the cloud-init template.
+  - Amazon Linux 2023 AMIs already comes with amazon-ssm-agent installed and started so no need to add it to the cloud-init template.
   - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
   - VPC endpoints for SSM, EC2 messages and SSM messages.
-    - This is most of the cost will be for the SSM Interfaces per AZ (see infracost section below).
+    - Most of the cost will be for the SSM Interfaces per AZ (see infracost section below).
     - No CloudWatch Logs VPC endpoint at this time.
   - Check registered instances (get instance id):
     - `aws ssm describe-instance-information --region us-west-2`
-  - Start ssm session with instance id instead of using ssh from bastion host:
+  - Start SSM session with instance id instead of using ssh from bastion host:
     - `aws ssm start-session --target i-07e941ffe289a2e2c --region us-west-2`
   - Free features:
     - SSM Agent itself (runs on EC2 at no cost).
@@ -172,8 +172,7 @@ NGINX reverse proxy + Socat Health Checks:
 Amazon RDS (MySQL):
 - Primary DB Instance with Multi-AZ and encryption via KMS.
 - Read Replica DB Instance (Intra-region and Multi-AZ).
-- Access controlled by SGs (only from ASG instances to RDS Proxy, and
-  ASG instances to RDS directly).
+- Access controlled by SGs (only from ASG instances to RDS Proxy, and ASG instances to RDS directly).
 - Secrets (MySQL creds) stored in AWS Secrets Manager.
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
@@ -200,7 +199,7 @@ VPC:
 - Requires IPAM.
 - Uses Tiered VPC-NG module.
 - Currently utilizing 2 AZs but more can be added.
-- Has a VPC Endpoint for sending s3 traffic direct to s3 instead of traversing IGW or NATGW.
+- Has a VPC Endpoint for sending S3 traffic direct to S3 instead of traversing IGW or NATGW.
 - Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
   - It will make it easier for db connections to be same VPC only so other intra region VPCs cant connect when full mesh TGW routes exist.
   - example: [Centralized Egress Demo](https://github.com/JudeQuintana/terraform-main/tree/main/centralized_egress_dual_stack_full_mesh_trio_demo)
@@ -292,7 +291,7 @@ Project: main
     - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
     - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
-  - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (rds proxy monthly cost) = $162 a month (roughly).
+  - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (RDS Proxy monthly cost) = $162 a month (roughly).
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MySQL (according to ChatGPT)
 Advantages:
