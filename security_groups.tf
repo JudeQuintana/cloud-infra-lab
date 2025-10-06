@@ -217,7 +217,6 @@ resource "aws_security_group" "ssm" {
   )
 }
 
-# allow ingress from vpc to ssm endpoints
 resource "aws_security_group_rule" "ssm_ingress_tcp_443_from_instance" {
   security_group_id        = aws_security_group.ssm.id
   source_security_group_id = aws_security_group.instance.id
