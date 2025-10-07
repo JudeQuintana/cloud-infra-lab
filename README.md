@@ -141,7 +141,7 @@ Auto Scaling Group (ASG):
     in progress instance refresh if another instance refresh is started.
   - View in progress instance refreshes with `aws autoscaling describe-instance-refreshes --auto-scaling-group-name test-web --region us-west-2`.
   - Current demo configuration will take up to 10min for a refresh to finish, manually cancel or start another instance refresh (auto cancel).
-- SSM
+- SSM (AWS Systems Manager)
   - Enable SSM via toggle, set `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
   - Amazon Linux 2023 AMIs already comes with amazon-ssm-agent installed and started so no need to add it to the cloud-init template.
   - IAM Role, EC2 Instance Profile, Security group and rules configured for SSM.
