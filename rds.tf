@@ -28,13 +28,21 @@ module "rds" {
     engine_version            = "8.4.5"
     db_parameter_group_family = "mysql8.4"
     instance_class            = "db.t3.micro"
-    db_parameters = [{
-      # (Default) safest—each event contains full before/after row image for replication to read replica when using mysql rds engine
-      apply_method = "immediate"
-      name         = "binlog_row_image"
-      value        = "FULL"
-    }]
-    connection         = local.rds_connection
+    connection                = local.rds_connection
+    db_parameters = [
+      {
+        # (Default) safest—each event contains full before/after row image for replication to read replica when using mysql rds engine
+        apply_method = "immediate"
+        name         = "binlog_row_image"
+        value        = "FULL"
+      },
+      {
+        # Enforce SSL on the RDS side
+        apply_method = "immediate"
+        name         = "require_secure_transport"
+        value        = "ON"
+      }
+    ]
     security_group_ids = [aws_security_group.rds.id]
     subnet_ids = [
       lookup(local.app_vpc.isolated_subnet_name_to_subnet_id, "db1"),
