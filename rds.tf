@@ -31,13 +31,13 @@ module "rds" {
     connection                = local.rds_connection
     db_parameters = [
       {
-        # (Default) safest—each event contains full before/after row image for replication to read replica when using mysql rds engine
+        # required for mysql replication to the read replica
         apply_method = "immediate"
         name         = "binlog_row_image"
         value        = "FULL"
       },
       {
-        # Enforce SSL on the RDS side
+        # enforce SSL on the RDS side
         apply_method = "immediate"
         name         = "require_secure_transport"
         value        = "1"
