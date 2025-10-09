@@ -32,7 +32,7 @@ With RDS Proxy (via toggle):
 
 ## Prerequisites
 AWS:
-- Install `aws` cli with `session-manager-plugin` extension and configured with an AWS account.
+- Install `aws` cli with `session-manager-plugin` extension and configure with an AWS account.
   - `brew install awscli session-manager-plugin`
 
 Zone and Domain:
@@ -46,7 +46,7 @@ Zone and Domain:
 IPAM Configuration:
 - There are many ways to configure IPAM.
   - You'll need to manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
-  - The demo will look up the IPAM pools via filter on description and ipv4 type.
+  - The demo will look up the IPAM pools via filter on description and IPv4 type.
 - Advanced Tier IPAM in `us-west-2` operating regions.
   - No IPv4 regional pools at the moment.
   - `us-west-2` (IPAM locale)
@@ -109,6 +109,7 @@ RDS Connectivity Checks:
 
 ## TODO
 - Configure SSM Agent to pull RDS creds directly from Secrets Manager instead of rendering them via cloud-init template.
+- Develop custom IPAM module.
 - Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
@@ -174,11 +175,13 @@ Amazon RDS (MYSQL):
 - Read Replica DB Instance (Intra-region and Multi-AZ).
 - Access controlled by SGs (only from ASG instances to RDS Proxy, and ASG instances to RDS directly).
 - Secrets (MYSQL credentials) stored in AWS Secrets Manager.
+- DB paramters for MYSQL replication and enforcing SSL server side (MYSQL clients are also connecting with --ssl).
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
   - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
+    - Enforces TLS server side.
   - Module Implementation:
     - IAM roles and policies for access to Secrets Manager MYSQL secrets.
     - Access to the primary is through the RDS Proxy to take advantage of DB pooling and failover benefits.
