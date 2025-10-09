@@ -40,7 +40,7 @@ module "rds" {
         # Enforce SSL on the RDS side
         apply_method = "immediate"
         name         = "require_secure_transport"
-        value        = "ON"
+        value        = "1"
       }
     ]
     security_group_ids = [aws_security_group.rds.id]
