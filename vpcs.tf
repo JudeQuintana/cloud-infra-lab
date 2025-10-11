@@ -1,19 +1,19 @@
 # ipam was set up manually (advanced tier)
 # main ipam in usw2 with a pool for usw2 locale
-data "aws_vpc_ipam_pool" "ipv4_usw2" {
-  filter {
-    name   = "description"
-    values = ["ipv4-test-usw2"]
-  }
+#data "aws_vpc_ipam_pool" "ipv4_usw2" {
+#filter {
+#name   = "description"
+#values = ["ipv4-test-usw2"]
+#}
 
-  filter {
-    name   = "address-family"
-    values = ["ipv4"]
-  }
-}
+#filter {
+#name   = "address-family"
+#values = ["ipv4"]
+#}
+#}
 
 locals {
-  ipv4_ipam_pool_usw2 = data.aws_vpc_ipam_pool.ipv4_usw2
+  #ipv4_ipam_pool_usw2 = data.aws_vpc_ipam_pool.ipv4_usw2
 
   # INFO: ASG instances can spin up without a NATGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
   # This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
@@ -37,7 +37,8 @@ locals {
       name = "app"
       ipv4 = {
         network_cidr = "10.0.0.0/18"
-        ipam_pool    = local.ipv4_ipam_pool_usw2
+        ipam_pool    = module.ipam.ipv4_pool
+        #ipam_pool    = local.ipv4_ipam_pool_usw2
       }
       azs = {
         a = {
