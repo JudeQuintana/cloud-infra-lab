@@ -12,10 +12,6 @@ variable "region_az_labels" {
     us-west-2a = "usw2a"
     us-west-2b = "usw2b"
     us-west-2c = "usw2c"
-    us-west-1  = "usw1"
-    us-west-1a = "usw1a"
-    us-west-1b = "usw1b"
-    us-west-1c = "usw1c"
   }
 }
 
@@ -37,8 +33,8 @@ variable "enable_rds_proxy" {
   default     = false
 }
 
-variable "enable_global_ipam" {
-  description = "Must decide to wether or not to toggle prior to first apply. False (default) means use 'data.aws_vpc_ipam_pool.ipv4_usw2' read/lookup. True means provision IPAM, pools and cidrs for the region via module."
+variable "enable_ipam" {
+  description = "Must decide to wether or not to toggle prior to first apply. False (default) means use 'data.aws_vpc_ipam_pool.ipv4_usw2' read/lookup of existing CIDR pool for the region. True means provision IPAM, pools and CIDRs for the region via module."
   type        = bool
   default     = false
 }
