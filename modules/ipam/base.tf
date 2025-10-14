@@ -7,7 +7,7 @@ locals {
   region         = data.aws_region.this.name
   ipam_name      = format("%s-%s", var.env_prefix, var.ipam.name)
   ipv4_pool_name = format("%s-%s-%s", local.ipam_name, "private", local.region)
-  # automatically include the module provider region
+  # auto include the module provider region
   operating_regions = toset(concat([local.region], var.ipam.operating_regions))
   provision_cidrs   = toset(var.ipam.provision_cidrs)
 }
