@@ -20,7 +20,7 @@ locals {
       name = "app"
       ipv4 = {
         network_cidr = "10.0.0.0/18"
-        ipam_pool    = local.ipv4_ipam_pool_usw2
+        ipam_pool    = local.ipv4_ipam_pool
       }
       azs = {
         a = {

@@ -23,12 +23,20 @@ output "asg_instance_refresh_enabled" {
   value = module.asg.instance_refresh
 }
 
+output "ipam_enabled" {
+  value = var.enable_ipam
+}
+
 output "ssm_enabled" {
   value = var.enable_ssm
 }
 
 output "rds_proxy_enabled" {
   value = var.enable_rds_proxy
+}
+
+output "rds_proxy_address" {
+  value = var.enable_rds_proxy ? lookup(module.rds_proxy, var.enable_rds_proxy).default_endpoint : null
 }
 
 output "primary_db_address" {

@@ -21,6 +21,12 @@ variable "zone_name" {
   default     = "jq1.io"
 }
 
+variable "enable_ipam" {
+  description = "Must decide to wether or not to toggle to enable IPAM module prior to first apply."
+  type        = bool
+  default     = false
+}
+
 variable "enable_ssm" {
   description = "Toggle for enabling SSM dependencies for ASG Instances when needed. Toggle anytime."
   type        = bool
@@ -29,12 +35,6 @@ variable "enable_ssm" {
 
 variable "enable_rds_proxy" {
   description = "Toggle for enabling RDS Proxy when needed. Toggle anytime."
-  type        = bool
-  default     = false
-}
-
-variable "enable_ipam" {
-  description = "Must decide to wether or not to toggle prior to first apply. False (default) means use 'data.aws_vpc_ipam_pool.ipv4_usw2' read/lookup of existing CIDR pool for the region. True means provision IPAM, pools and CIDRs for the region via module."
   type        = bool
   default     = false
 }
