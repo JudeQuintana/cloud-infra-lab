@@ -32,8 +32,10 @@ With RDS Proxy (via toggle):
 
 ## Prerequisites
 AWS:
-- Install `aws` cli with `session-manager-plugin` extension and configure with an AWS account.
-  - `brew install awscli session-manager-plugin`
+- Install:
+  - `aws` cli with `session-manager-plugin` extension and configure with an AWS account.
+  - Terraform Version Manager `tfenv`.
+  - `brew install awscli session-manager-plugin tfenv`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
