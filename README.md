@@ -49,16 +49,16 @@ IPAM Configuration:
 - There are many ways to configure IPAM but there are a two options to consider before building the lab.
   - Note that there can only be one IPAM per region.
 - Initially, the lab recommended manually creating IPAM resources, pools and provisioned CIDRS.
-    - The default behavior (`var.enable_ipam = false`) is to use the manually created IPAM pool in `us-west-2` via the `data.aws_vpc_ipam_pool.ipv4` read/lookup for the region.
-      - Manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
-      - The existing IPAM pools will be looked up via filter on description and IPv4 type.
-        - Advanced Tier IPAM in `us-west-2` operating regions.
-          - No IPv4 regional pools at the moment.
-          - `us-west-2` (IPAM locale)
-            - IPv4 Pool (private scope)
-              - Description: `ipv4-test-usw2`
-              - Provisioned CIDRs:
-                - `10.0.0.0/18`
+- The default behavior (`var.enable_ipam = false`) is to use the manually created IPAM pool in `us-west-2` via the `data.aws_vpc_ipam_pool.ipv4` read/lookup for the region.
+  - Manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
+  - The existing IPAM pools will be looked up via filter on description and IPv4 type.
+    - Advanced Tier IPAM in `us-west-2` operating regions.
+      - No IPv4 regional pools at the moment.
+      - `us-west-2` (IPAM locale)
+        - IPv4 Pool (private scope)
+          - Description: `ipv4-test-usw2`
+          - Provisioned CIDRs:
+            - `10.0.0.0/18`
 - Now there's a toggle to enable IPAM, pools and CIDRS via module by changing `var.enable_ipam = true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
     - Prerequisite:
       - If there is already an IPAM in the lab region `us-west-2` then it must be deleted along with associate pools and provisioned CIDRs.
