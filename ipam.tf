@@ -4,11 +4,11 @@ locals {
   data_ipam_cidr_pool = { for this in [!var.enable_ipam] : this => this if !var.enable_ipam }
 }
 
-# if var.enable_ipam = `true`
+# if var.enable_ipam = true
 # create ipam, pools and provision cidrs
 # prereq:
 #  - no ipam exists in the `us-west-2` region
-#  - no other ipams (in other regions) should provision the 10.0.0.0/18 CIDR
+#  - no other ipam (in another regions) should provision the 10.0.0.0/18 CIDR
 module "ipam" {
   source = "./modules/ipam"
 
@@ -21,7 +21,7 @@ module "ipam" {
   }
 }
 
-# if var.enable_ipam = `false` (default)
+# if var.enable_ipam = false (default)
 # use pre-existing cidr pool via data read
 # ipam was set up manually (advanced tier)
 # main ipam in usw2 with a pool for usw2 locale
