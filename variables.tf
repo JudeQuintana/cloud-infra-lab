@@ -24,7 +24,7 @@ variable "zone_name" {
 variable "enable_ipam" {
   description = "Must decide to wether or not to toggle to enable IPAM module prior to first apply."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_ssm" {
