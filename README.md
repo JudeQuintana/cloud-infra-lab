@@ -176,7 +176,8 @@ provider "aws" {
 - Now you can apply to the new region.
 - Notes:
   - It's not recommended to switch out the provider region while resources exist in state for the region `us-west-2`.
-  - If `us-west-2` resources already exist, you should tear down (destroy) the resources for the current region first, then make the region changes and apply for the new region.
+  - If `us-west-2` resources already exist, you should tear down (destroy) the resources for the current region first, then make the region changes and apply for the new region `us-east-2`.
+  - Update any manual `aws` commands for the `us-east-2` region.
 
 ## Bug fixes
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
