@@ -22,7 +22,7 @@ variable "zone_name" {
 }
 
 variable "enable_ipam" {
-  description = "Must decide to wether or not to toggle to enable IPAM module prior to first apply or use existing IPAM pools via description lookup."
+  description = "Must decide to enable IPAM module prior to first apply or use existing IPAM pools via description lookup (default)."
   type        = bool
   default     = false
 }
