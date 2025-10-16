@@ -1,4 +1,3 @@
-
 output "id" {
   value = aws_vpc_ipam.this.id
 }
