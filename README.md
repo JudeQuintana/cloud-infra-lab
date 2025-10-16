@@ -114,6 +114,70 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (RDS Proxy: false) or MySQL Primary ERROR`
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
 
+## Switching regions
+To use another region, there's a small set of changes to be made.
+- Be sure to start with an empty TF state.
+
+- Add the new region and it's AZs to `var.region_az_labels` in `variables.tf`:
+```terraform
+variable "region_az_labels" {
+  description = "Update this map with regions and AZs that will be in use for short name labeling."
+  type        = map(string)
+  default = {
+    us-west-2  = "usw2"
+    us-west-2a = "usw2a"
+    us-west-2b = "usw2b"
+    us-west-2c = "usw2c"
+    us-east-2  = "use2"
+    us-east-2a = "use2a"
+    us-east-2b = "use2b"
+    us-east-2c = "use2c"
+  }
+}
+```
+
+- Add a new egress security group rule for the ASG instances to reach the region's S3 gateway IP ranges in `security_groups.tf`:
+```terraform
+# curl -S https://ip-ranges.amazonaws.com/ip-ranges.json  | jq '.prefixes[] | select(.region == "us-east-2" and .service == "S3")|.ip_prefix'
+resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_east_2" {
+  security_group_id = aws_security_group.instance.id
+  cidr_blocks = [
+    "52.219.212.0/22",
+    "52.219.143.0/24",
+    "52.219.141.0/24",
+    "18.34.72.0/21",
+    "3.5.128.0/22",
+    "52.219.142.0/24",
+    "52.219.96.0/20",
+    "3.5.132.0/23",
+    "52.219.232.0/22",
+    "18.34.252.0/22",
+    "16.12.64.0/22",
+    "52.219.176.0/22",
+    "16.12.60.0/22",
+    "52.219.224.0/22",
+    "52.219.80.0/20",
+    "52.219.228.0/22",
+    "1.178.8.0/24",
+    "3.141.102.208/28",
+    "3.141.102.224/28",
+  ]
+}
+```
+
+- Then update the provider region in `provider.tf`:
+```terraform
+# base region
+provider "aws" {
+  region = "us-east-2"
+}
+```
+
+- Now you can apply to the new region.
+- Notes:
+  - It's not recommended to switch out the provider region while resources exist in state for the region `us-west-2`.
+  - If `us-west-2` resources already exist, you should tear down (destroy) the resources for the current region first, then make the region changes and apply for the new region.
+
 ## Bug fixes
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
