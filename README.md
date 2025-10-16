@@ -32,8 +32,10 @@ With RDS Proxy (via toggle):
 
 ## Prerequisites
 AWS:
-- Install `aws` cli with `session-manager-plugin` extension and configure with an AWS account.
-  - `brew install awscli session-manager-plugin`
+- Install:
+  - `aws` cli with `session-manager-plugin` extension and configure with an AWS account.
+  - Terraform Version Manager `tfenv`.
+  - `brew install awscli session-manager-plugin tfenv`
 
 Zone and Domain:
 - AWS Route53 zone resource should already exist (either manually or in Terraform).
@@ -44,16 +46,23 @@ Zone and Domain:
   - Demo is not configured for an apex domain at this time.
 
 IPAM Configuration:
-- There are many ways to configure IPAM.
-  - You'll need to manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
-  - The demo will look up the IPAM pools via filter on description and IPv4 type.
-- Advanced Tier IPAM in `us-west-2` operating regions.
-  - No IPv4 regional pools at the moment.
-  - `us-west-2` (IPAM locale)
-    - IPv4 Pool (private scope)
-      - Description: `ipv4-test-usw2`
-      - Provisioned CIDRs:
-        - `10.0.0.0/18`
+- There are many ways to configure IPAM but there are a two options to consider before building the lab.
+  - Note that there can only be one IPAM per region.
+- Initially, the lab recommended manually creating IPAM resources, pools and provisioned CIDRS.
+- The default behavior (`var.enable_ipam = false`) is to use the manually created IPAM pool in `us-west-2` via the `data.aws_vpc_ipam_pool.ipv4` read/lookup for the region.
+  - Manually configure your own IPv4 pools/subpools in IPAM (advanced tier) in the AWS UI.
+  - The existing IPAM pools will be looked up via filter on description and IPv4 type.
+    - Advanced Tier IPAM in `us-west-2` operating regions.
+      - No IPv4 regional pools at the moment.
+      - `us-west-2` (IPAM locale)
+        - IPv4 Pool (private scope)
+          - Description: `ipv4-test-usw2`
+          - Provisioned CIDRs:
+            - `10.0.0.0/18`
+- Now there's a toggle to enable IPAM, pools and CIDRS via module by changing `var.enable_ipam = true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+    - Prerequisite:
+      - If there is already an IPAM in the lab region `us-west-2` then it must be deleted along with associate pools and provisioned CIDRs.
+      - If there is a different region (not `us-west-2`) that has IPAM with a pool that already provisions the `10.0.0.0/18` CIDR then the CIDR must be deprovisioned before provisioning it in the IPAM module.
 
 Notes:
 - Cloud Infra Lab attempts to demonstrate:
@@ -71,8 +80,9 @@ Notes:
 Build:
 - `terraform init`
   - To experiment with:
-    - SSM: change `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
-    - RDS Proxy: change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33).
+    - IPAM: change `var.enable_ipam` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
+    - SSM: change `var.enable_ssm` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33).
+    - RDS Proxy: change `var.enable_rds_proxy` to `true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L39).
 - `terraform apply`
   - It takes a few minutes for ASG instances to finish spinning up once apply is complete.
 - profit!
@@ -104,12 +114,76 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app1` -> `App1: MySQL Primary OK (RDS Proxy: false) or MySQL Primary ERROR`
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
 
+## Switching regions
+To use another region, there's a small set of changes to be made.
+- Be sure to start with an empty TF state.
+
+- Add the new region and it's AZs to `var.region_az_labels` in `variables.tf`:
+```terraform
+variable "region_az_labels" {
+  description = "Update this map with regions and AZs that will be in use for short name labeling."
+  type        = map(string)
+  default = {
+    us-west-2  = "usw2"
+    us-west-2a = "usw2a"
+    us-west-2b = "usw2b"
+    us-west-2c = "usw2c"
+    us-east-2  = "use2"
+    us-east-2a = "use2a"
+    us-east-2b = "use2b"
+    us-east-2c = "use2c"
+  }
+}
+```
+
+- Add a new egress security group rule for the ASG instances to reach the region's S3 gateway IP ranges in `security_groups.tf`:
+```terraform
+# curl -S https://ip-ranges.amazonaws.com/ip-ranges.json  | jq '.prefixes[] | select(.region == "us-east-2" and .service == "S3")|.ip_prefix'
+resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_east_2" {
+  security_group_id = aws_security_group.instance.id
+  cidr_blocks = [
+    "52.219.212.0/22",
+    "52.219.143.0/24",
+    "52.219.141.0/24",
+    "18.34.72.0/21",
+    "3.5.128.0/22",
+    "52.219.142.0/24",
+    "52.219.96.0/20",
+    "3.5.132.0/23",
+    "52.219.232.0/22",
+    "18.34.252.0/22",
+    "16.12.64.0/22",
+    "52.219.176.0/22",
+    "16.12.60.0/22",
+    "52.219.224.0/22",
+    "52.219.80.0/20",
+    "52.219.228.0/22",
+    "1.178.8.0/24",
+    "3.141.102.208/28",
+    "3.141.102.224/28",
+  ]
+}
+```
+
+- Then update the provider region in `provider.tf`:
+```terraform
+# base region
+provider "aws" {
+  region = "us-east-2"
+}
+```
+
+- Now you can apply to the new region.
+- Notes:
+  - It's not recommended to switch out the provider region while resources exist in state for the region `us-west-2`.
+  - If `us-west-2` resources already exist, you should tear down (destroy) the resources for the current region first, then make the region changes and apply for the new region `us-east-2`.
+  - Update any manual `aws` commands for the `us-east-2` region.
+
 ## Bug fixes
 - [problematic characters in random db password](https://github.com/JudeQuintana/cloud-infra-lab/pull/9)
 
 ## TODO
 - Configure SSM Agent to pull RDS creds directly from Secrets Manager instead of rendering them via cloud-init template.
-- Develop custom IPAM module.
 - Switch out `socat` TCP server for a more useful HTTP server with Go, Ruby or Python using only the standard library (maybe).
 
 ## Components
@@ -179,7 +253,7 @@ Amazon RDS (MYSQL):
 - RDS Proxy: is for scaling connections and managing failover smoother.
   - Using RDS Proxy in front of a `db.t3.micro` is usually overkill unless you absolutely need connection pooling (ie you’re hitting it with Lambdas). For small/steady workloads with a few long-lived connections (ie web apps on EC2s).
     It’s better to skip proxy. The cost/benefit only makes sense once you’re on larger instance sizes or serverless-heavy patterns.
-  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L33) boolean value (default is `false`).
+  - The RDS proxy can be toggled via `var.enable_rds_proxy` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L39) boolean value (default is `false`).
     - This will demonstrate easily spinning up or spinning up an RDS proxy when scaling connections is needed or for experimenting with RDS Proxy
     - Enforces TLS server side.
   - Module Implementation:

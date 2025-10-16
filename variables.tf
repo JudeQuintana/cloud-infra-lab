@@ -21,14 +21,20 @@ variable "zone_name" {
   default     = "jq1.io"
 }
 
+variable "enable_ipam" {
+  description = "Must decide to enable IPAM module prior to first apply or use existing IPAM pools via description lookup (default)."
+  type        = bool
+  default     = false
+}
+
 variable "enable_ssm" {
-  description = "Toggle for enabling SSM dependencies for ASG Instances when needed."
+  description = "Toggle for enabling SSM dependencies for ASG Instances when needed. Toggle anytime."
   type        = bool
   default     = false
 }
 
 variable "enable_rds_proxy" {
-  description = "Toggle for enabling RDS Proxy when needed."
+  description = "Toggle for enabling RDS Proxy when needed. Toggle anytime."
   type        = bool
   default     = false
 }
