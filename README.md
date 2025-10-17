@@ -118,6 +118,8 @@ RDS Connectivity Checks:
 To use another region, there's a small set of changes to be made.
 - Be sure to start with an empty TF state.
 
+- If using the IPAM Pool lookup (`var.ipam = false` default) then you'll need to update the filters in the `data.aws_vpc_ipam_pool.ipv4` data source for the manually created IPAM Pools in `us-east-2` other wise you can use `var.ipam = true` for the new region.
+
 - Add the new region and it's AZs to `var.region_az_labels` in `variables.tf`:
 ```terraform
 variable "region_az_labels" {
