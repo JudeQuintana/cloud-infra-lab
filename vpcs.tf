@@ -50,6 +50,7 @@ locals {
   ]
 }
 
+# source = https://github.com/JudeQuintana/terraform-aws-tiered-vpc-ng/tree/v1.0.7
 module "vpcs" {
   source  = "JudeQuintana/tiered-vpc-ng/aws"
   version = "1.0.7"
