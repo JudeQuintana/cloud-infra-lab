@@ -280,7 +280,7 @@ Scaling Behavior:
 
 VPC:
 - Requires IPAM.
-- Uses Tiered VPC-NG module.
+- Uses [Tiered VPC-NG module](https://github.com/JudeQuintana/terraform-aws-tiered-vpc-ng/tree/v1.0.7).
 - Currently utilizing 2 AZs but more can be added.
 - Has a VPC Endpoint for sending S3 traffic direct to S3 instead of traversing IGW or NATGW.
 - Using isolated subnets for db subnets for future use when scaling VPCs in a Centralized Router (TGW hub and spoke).
