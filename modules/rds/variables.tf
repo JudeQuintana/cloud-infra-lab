@@ -62,7 +62,7 @@ variable "rds" {
 
   validation {
     condition     = strcontains(var.rds.engine, "mysql")
-    error_message = " Only supports RDS engines that have the mysql string in the name, hasnt been tested with other DBs"
+    error_message = "Only supports RDS engines that have the mysql string in the name, hasnt been tested with other DBs"
   }
 }
 
