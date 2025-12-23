@@ -4,12 +4,27 @@ data "aws_ami" "al2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023*"]
+    values = ["al2023-ami-2023.*-x86_64"]
   }
 
   filter {
     name   = "architecture"
     values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
@@ -28,7 +43,7 @@ locals {
 }
 
 # It's difficult to test scale-out with no load testing scripts (at the moment) but you can test the scale-in by selecting a desired capacity of 6 and watch the asg terminate unneeded instance capacity down back to 2.
-# will launch with initial desired_capacity value but any updates will be ignored so that the sale in and scale out alarms takeover
+# will launch with initial desired_capacity value but any updates will be ignored so that the scale-in and scale-out alarms takeover.
 # uncomment lifecyle ignore changes for desired_capacity in the asg resource in the asg module.
 module "asg" {
   source = "./modules/asg"
@@ -40,7 +55,7 @@ module "asg" {
     max_size           = 8
     desired_capacity   = 2
     ami                = data.aws_ami.al2023
-    instance_type      = "t2.micro"
+    instance_type      = "t3.micro"
     user_data          = local.cloud_init
     ssm                = var.enable_ssm
     alb                = module.alb

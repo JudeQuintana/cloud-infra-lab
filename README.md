@@ -19,7 +19,7 @@
 ## Intro
 First time using ChatGPT to assist my AWS and Terraform knowledge in building and troubleshooting a small, cheap yet scalable, cloud project end-to-end for learning purposes.
 
-Beginner to intermediate level.
+Beginner to advanced level.
 
 Enjoy!
 
@@ -62,7 +62,7 @@ IPAM Configuration:
 - Now there's a toggle to enable IPAM, pools and CIDRS via module by changing `var.enable_ipam = true` in [variables.tf](https://github.com/JudeQuintana/cloud-infra-lab/blob/main/variables.tf#L27).
     - Prerequisite:
       - If there is already an IPAM in the lab region `us-west-2` then it must be deleted along with associate pools and provisioned CIDRs.
-      - If there is a different region (not `us-west-2`) that has IPAM with a pool that already provisions the `10.0.0.0/18` CIDR then the CIDR must be deprovisioned before provisioning it in the IPAM module.
+      - If there is a different region (not `us-west-2`) that has IPAM with a pool that already provisions the `10.0.0.0/18` CIDR then the CIDR must be deprovisioned before provisioning it in the IPAM module (including overlapping CIDRs).
 
 Notes:
 - Cloud Infra Lab attempts to demonstrate:
@@ -115,7 +115,7 @@ RDS Connectivity Checks:
 - `https://cloud.some.domain/app2` -> `App2: MySQL Read Replica OK or MySQL Read Replica ERROR`
 
 ## Switching regions
-To use another region, there's a small set of changes to be made.
+To use another region like `us-east-2` instead of `us-west-2` there's a small set of changes to be made.
 - Be sure to start with an empty TF state.
 
 - If using the IPAM Pool lookup (`var.ipam = false` default) then you'll need to update the filters in the `data.aws_vpc_ipam_pool.ipv4` data source for the manually created IPAM Pools in `us-east-2` other wise you can use `var.ipam = true` for the new region.
@@ -145,8 +145,10 @@ resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_east_2" {
   security_group_id = aws_security_group.instance.id
   cidr_blocks = [
     "52.219.212.0/22",
+    "3.5.92.0/23",
     "52.219.143.0/24",
     "52.219.141.0/24",
+    "3.5.88.0/22",
     "18.34.72.0/21",
     "3.5.128.0/22",
     "52.219.142.0/24",
@@ -200,7 +202,8 @@ Application Load Balancer (ALB):
 
 Auto Scaling Group (ASG):
 - EC2 instances with cloud-init & socat health endpoints.
-  - Using `t2.micro` instance with encrypted root volumes.
+  - Using `t3.micro` instance with encrypted root volumes.
+  - One important footnote for ASGs: T3 runs in "Unlimited" by default, so if instances sustain high CPU long enough, you can incur CPU credit charges beyond the base hourly rate.
   - Utilizing MariaDB as the MYSQL client.
   - Some IMDSv2 config in metadata options.
     - Stop SSRF/metadata theft via IMDSv1.
@@ -306,7 +309,7 @@ Project: main
 
  module.asg.aws_autoscaling_group.this
  └─ module.asg.aws_launch_template.this
-    ├─ Instance usage (Linux/UNIX, on-demand, t2.micro)               1,460  hours                         $16.94
+    ├─ Instance usage (Linux/UNIX, on-demand, t2.micro)               1,460  hours                         $15.18
     └─ block_device_mapping[0]
        └─ Storage (general purpose SSD, gp3)                             16  GB                             $1.28
 
@@ -346,7 +349,7 @@ Project: main
  ├─ Latency based routing queries (first 1B)              Monthly cost depends on usage: $0.60 per 1M queries
  └─ Geo DNS queries (first 1B)                            Monthly cost depends on usage: $0.70 per 1M queries
 
- OVERALL TOTAL                                                                                            $96.08
+ OVERALL TOTAL                                                                                            $94.32
 
 *Usage costs can be estimated by updating Infracost Cloud settings, see docs for other options.
 
@@ -360,21 +363,21 @@ Project: main
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
 ┃ Project                                            ┃ Baseline cost ┃ Usage cost* ┃ Total cost ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━╋━━━━━━━━━━━━┫
-┃ main                                               ┃           $96 ┃           - ┃        $96 ┃
+┃ main                                               ┃           $94 ┃           - ┃        $94 ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━┛
 ```
 
 - With SSM (via toggle)
   - SSM core features: $0.00
   - VPC Interface Endpoints for SSM: 3 SSM Endpoints (required) × 2 AZs × $0.01 × 730h ≈ $43.80.
-  - Result: $96 + $44 = $140
+  - Result: $94 + $44 = $138
 
 - With RDS Proxy (via toggle):
   - A `db.t3.micro` RDS DB instance itself costs only about $15–20/month (depending on region, reserved vs. on-demand).
     - RDS Proxy billing is per vCPU-hour of the underlying DB instance(s)
     - Rate: $0.015 per vCPU-hour (us-west-2) -> 2 vCPUs × $0.015 × 730 hrs ≈ $21.90 / month.
     - That means the proxy can actually cost as much as, or more than, the tiny database itself.
-  - Result: $96 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (RDS Proxy monthly cost) = $162 a month (roughly).
+  - Result: $94 (default monthly cost) + $44 (SSM VPC Endpoints) + $22 (RDS Proxy monthly cost) = $160 a month (roughly).
 
 ## ✅ Pros and ❌ Cons of using a reverse proxy to access MYSQL (according to ChatGPT)
 Advantages:

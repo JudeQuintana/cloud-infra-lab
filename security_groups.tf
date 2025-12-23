@@ -1,5 +1,5 @@
 locals {
-  # only for sg tags since modules tag env themselves
+  # default_sg_tags are only for sg tags since modules tag env themselves
   # cant combine sg and sg rules in a module due to cycle errors when using source_security_group_id
   # so keeping sg and sg rules separate for now ref: https://github.com/JudeQuintana/cloud-infra-lab/pull/16
   default_sg_tags = merge({
@@ -78,6 +78,7 @@ resource "aws_security_group_rule" "instance_ingress_tcp_80_from_alb" {
 
 # needed to access s3 endpoints in us-west-2 region according to https://ip-ranges.amazonaws.com/ip-ranges.json
 # curl -S https://ip-ranges.amazonaws.com/ip-ranges.json  | jq '.prefixes[] | select(.region == "us-west-2" and .service == "S3")|.ip_prefix'
+# hard coded ips is brittle, could use better automation to auto pull the ips but good enough for now.
 resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_west_2" {
   security_group_id = aws_security_group.instance.id
   cidr_blocks = [
@@ -89,6 +90,7 @@ resource "aws_security_group_rule" "instance_egress_tcp_443_to_s3_us_west_2" {
     "18.34.244.0/22",
     "18.34.48.0/20",
     "3.5.80.0/21",
+    "16.15.32.0/20",
     "52.218.128.0/17",
     "52.92.128.0/17",
     "1.178.65.0/24",

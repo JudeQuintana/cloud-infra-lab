@@ -1,6 +1,6 @@
 # INFO: ASG instances can spin up without a NATGW because there's an S3 gateway (vpc_endpoint.tf) in this configuration.
 # This is because Amazon Linux 2023 AMI uses S3 for the yum repo.
-# If you plan on using NATGWs for the ASG instances when modifying the cloud-init script then set natgw = true and you'll need to add an egress security group rule to the instances security group.
+# If you plan on using NATGWs for the ASG instances when modifying the cloud-init script for pulling artifacts from the internet, then set natgw = true and you'll need to add an egress security group rule to the instances security group.
 # for example this security group rule would allow https outbound to the internet:
 # resource "aws_security_group_rule" "instance_egress_allow_443_to_internet" {
 #   security_group_id = aws_security_group.instance.id

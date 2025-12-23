@@ -1,5 +1,4 @@
 # valid mysql db admin pass
-# having $ and # characters wont be a problem anymore (shell expansion and comments on the host) now that the cloud_init templatized
 # removing potntial problematic characters like ; / "
 resource "random_password" "rds_password" {
   length           = 32
@@ -25,7 +24,7 @@ module "rds" {
   rds = {
     name                      = "app"
     engine                    = "mysql"
-    engine_version            = "8.4.5"
+    engine_version            = "8.4.7"
     db_parameter_group_family = "mysql8.4"
     instance_class            = "db.t3.micro"
     connection                = local.rds_connection

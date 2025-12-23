@@ -8,7 +8,7 @@ locals {
 # create ipam, pools and provision cidrs
 # prereq:
 #  - no ipam exists in the `us-west-2` region
-#  - no other ipam (in another regions) should provision the 10.0.0.0/18 CIDR
+#  - no other ipam (in another regions) should provision the 10.0.0.0/18 CIDR (including overlapping CIDRs)
 module "ipam" {
   source = "./modules/ipam"
 
