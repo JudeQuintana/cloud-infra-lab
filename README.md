@@ -309,7 +309,7 @@ Project: main
 
  module.asg.aws_autoscaling_group.this
  └─ module.asg.aws_launch_template.this
-    ├─ Instance usage (Linux/UNIX, on-demand, t2.micro)               1,460  hours                         $15.18
+    ├─ Instance usage (Linux/UNIX, on-demand, t3.micro)               1,460  hours                         $15.18
     └─ block_device_mapping[0]
        └─ Storage (general purpose SSD, gp3)                             16  GB                             $1.28
 
